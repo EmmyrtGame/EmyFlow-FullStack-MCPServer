@@ -1,0 +1,2034 @@
+{
+    "name": "Eventos CAPI | White Dental",
+    "flow": [
+        {
+            "id": 1,
+            "module": "app#wassenger-0waevn:watchEvents",
+            "version": 1,
+            "parameters": {
+                "__IMTHOOK__": 1600611
+            },
+            "mapper": {},
+            "metadata": {
+                "designer": {
+                    "x": 0,
+                    "y": 150
+                },
+                "restore": {
+                    "parameters": {
+                        "__IMTHOOK__": {
+                            "data": {
+                                "editable": "false"
+                            },
+                            "label": "Eventos CAPI | White Dental"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTHOOK__",
+                        "type": "hook:app#wassenger-0waevn",
+                        "label": "Webhook",
+                        "required": true
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "id",
+                        "type": "text",
+                        "label": "ID"
+                    },
+                    {
+                        "name": "object",
+                        "type": "text",
+                        "label": "Object"
+                    },
+                    {
+                        "name": "event",
+                        "type": "text",
+                        "label": "Event"
+                    },
+                    {
+                        "name": "created",
+                        "type": "number",
+                        "label": "Created"
+                    },
+                    {
+                        "name": "device",
+                        "spec": [
+                            {
+                                "name": "id",
+                                "type": "text",
+                                "label": "ID"
+                            },
+                            {
+                                "name": "phone",
+                                "type": "text",
+                                "label": "Phone"
+                            },
+                            {
+                                "name": "alias",
+                                "type": "text",
+                                "label": "Alias"
+                            },
+                            {
+                                "name": "plan",
+                                "type": "text",
+                                "label": "Plan"
+                            },
+                            {
+                                "name": "version",
+                                "type": "number",
+                                "label": "Version"
+                            }
+                        ],
+                        "type": "collection",
+                        "label": "Device"
+                    },
+                    {
+                        "name": "data",
+                        "spec": [
+                            {
+                                "name": "id",
+                                "type": "text",
+                                "label": "ID"
+                            },
+                            {
+                                "name": "type",
+                                "type": "text",
+                                "label": "Type"
+                            },
+                            {
+                                "name": "flow",
+                                "type": "text",
+                                "label": "Flow"
+                            },
+                            {
+                                "name": "status",
+                                "type": "text",
+                                "label": "Status"
+                            },
+                            {
+                                "name": "ack",
+                                "type": "text",
+                                "label": "Ack"
+                            },
+                            {
+                                "name": "from",
+                                "type": "text",
+                                "label": "From"
+                            },
+                            {
+                                "name": "fromNumber",
+                                "type": "text",
+                                "label": "From Number"
+                            },
+                            {
+                                "name": "to",
+                                "type": "text",
+                                "label": "To"
+                            },
+                            {
+                                "name": "toNumber",
+                                "type": "text",
+                                "label": "To Number"
+                            },
+                            {
+                                "name": "date",
+                                "type": "date",
+                                "label": "Date"
+                            },
+                            {
+                                "name": "timestamp",
+                                "type": "number",
+                                "label": "Timestamp"
+                            },
+                            {
+                                "name": "body",
+                                "type": "text",
+                                "label": "Body"
+                            },
+                            {
+                                "name": "chat",
+                                "spec": [
+                                    {
+                                        "name": "id",
+                                        "type": "text",
+                                        "label": "ID"
+                                    },
+                                    {
+                                        "name": "name",
+                                        "type": "text",
+                                        "label": "Name"
+                                    },
+                                    {
+                                        "name": "date",
+                                        "type": "date",
+                                        "label": "Date"
+                                    },
+                                    {
+                                        "name": "type",
+                                        "type": "text",
+                                        "label": "Type"
+                                    },
+                                    {
+                                        "name": "status",
+                                        "type": "text",
+                                        "label": "Status"
+                                    },
+                                    {
+                                        "name": "waStatus",
+                                        "type": "text",
+                                        "label": "Wa Status"
+                                    },
+                                    {
+                                        "name": "statusUpdatedAt",
+                                        "type": "date",
+                                        "label": "Status Updated At"
+                                    },
+                                    {
+                                        "name": "deletedAt",
+                                        "type": "date",
+                                        "label": "Deleted At"
+                                    },
+                                    {
+                                        "name": "firstMessageAt",
+                                        "type": "date",
+                                        "label": "First Message At"
+                                    },
+                                    {
+                                        "name": "lastMessageAt",
+                                        "type": "date",
+                                        "label": "Last Message At"
+                                    },
+                                    {
+                                        "name": "lastOutboundMessageAt",
+                                        "type": "date",
+                                        "label": "Last Outbound Message At"
+                                    },
+                                    {
+                                        "name": "lastInboundMessageAt",
+                                        "type": "date",
+                                        "label": "Last Inbound Message At"
+                                    },
+                                    {
+                                        "name": "lastReactionAt",
+                                        "type": "date",
+                                        "label": "Last Reaction At"
+                                    },
+                                    {
+                                        "name": "lastReactionEmoji",
+                                        "type": "text",
+                                        "label": "Last Reaction Emoji"
+                                    },
+                                    {
+                                        "name": "stats",
+                                        "spec": [
+                                            {
+                                                "name": "notes",
+                                                "type": "number",
+                                                "label": "Notes"
+                                            },
+                                            {
+                                                "name": "localMessages",
+                                                "type": "number",
+                                                "label": "Local Messages"
+                                            },
+                                            {
+                                                "name": "inboundMessages",
+                                                "type": "number",
+                                                "label": "Inbound Messages"
+                                            },
+                                            {
+                                                "name": "outboundMessages",
+                                                "type": "number",
+                                                "label": "Outbound Messages"
+                                            }
+                                        ],
+                                        "type": "collection",
+                                        "label": "Stats"
+                                    },
+                                    {
+                                        "name": "labels",
+                                        "spec": {
+                                            "type": "text"
+                                        },
+                                        "type": "array",
+                                        "label": "Labels"
+                                    },
+                                    {
+                                        "name": "owner",
+                                        "spec": [
+                                            {
+                                                "name": "agent",
+                                                "type": "text",
+                                                "label": "Agent"
+                                            },
+                                            {
+                                                "name": "assigner",
+                                                "type": "text",
+                                                "label": "Assigner"
+                                            },
+                                            {
+                                                "name": "assignedAt",
+                                                "type": "date",
+                                                "label": "Assigned At"
+                                            }
+                                        ],
+                                        "type": "collection",
+                                        "label": "Owner"
+                                    },
+                                    {
+                                        "name": "contact",
+                                        "spec": [
+                                            {
+                                                "name": "wid",
+                                                "type": "text",
+                                                "label": "Wid"
+                                            },
+                                            {
+                                                "name": "name",
+                                                "type": "text",
+                                                "label": "Name"
+                                            },
+                                            {
+                                                "name": "shortName",
+                                                "type": "text",
+                                                "label": "Short Name"
+                                            },
+                                            {
+                                                "name": "displayName",
+                                                "type": "text",
+                                                "label": "Display Name"
+                                            },
+                                            {
+                                                "name": "formattedName",
+                                                "type": "text",
+                                                "label": "Formatted Name"
+                                            },
+                                            {
+                                                "name": "formattedShortName",
+                                                "type": "text",
+                                                "label": "Formatted Short Name"
+                                            },
+                                            {
+                                                "name": "syncedAt",
+                                                "type": "date",
+                                                "label": "Synced At"
+                                            },
+                                            {
+                                                "name": "phone",
+                                                "type": "text",
+                                                "label": "Phone"
+                                            },
+                                            {
+                                                "name": "image",
+                                                "spec": [
+                                                    {
+                                                        "name": "url",
+                                                        "type": "text",
+                                                        "label": "Url"
+                                                    }
+                                                ],
+                                                "type": "collection",
+                                                "label": "Image"
+                                            }
+                                        ],
+                                        "type": "collection",
+                                        "label": "Contact"
+                                    }
+                                ],
+                                "type": "collection",
+                                "label": "Chat"
+                            },
+                            {
+                                "name": "events",
+                                "spec": [
+                                    {
+                                        "name": "sent",
+                                        "spec": [
+                                            {
+                                                "name": "date",
+                                                "type": "date",
+                                                "label": "Date"
+                                            }
+                                        ],
+                                        "type": "collection",
+                                        "label": "Sent"
+                                    }
+                                ],
+                                "type": "collection",
+                                "label": "Events"
+                            },
+                            {
+                                "name": "meta",
+                                "spec": [
+                                    {
+                                        "name": "rtl",
+                                        "type": "boolean",
+                                        "label": "Rtl"
+                                    },
+                                    {
+                                        "name": "containsEmoji",
+                                        "type": "boolean",
+                                        "label": "Contains Emoji"
+                                    },
+                                    {
+                                        "name": "isGif",
+                                        "type": "boolean",
+                                        "label": "Is Gif"
+                                    },
+                                    {
+                                        "name": "isStar",
+                                        "type": "boolean",
+                                        "label": "Is Star"
+                                    },
+                                    {
+                                        "name": "isGroup",
+                                        "type": "boolean",
+                                        "label": "Is Group"
+                                    },
+                                    {
+                                        "name": "isForwarded",
+                                        "type": "boolean",
+                                        "label": "Is Forwarded"
+                                    },
+                                    {
+                                        "name": "isEphemeral",
+                                        "type": "boolean",
+                                        "label": "Is Ephemeral"
+                                    },
+                                    {
+                                        "name": "isNotification",
+                                        "type": "boolean",
+                                        "label": "Is Notification"
+                                    },
+                                    {
+                                        "name": "isLive",
+                                        "type": "boolean",
+                                        "label": "Is Live"
+                                    },
+                                    {
+                                        "name": "isBroadcast",
+                                        "type": "boolean",
+                                        "label": "Is Broadcast"
+                                    },
+                                    {
+                                        "name": "isBizNotification",
+                                        "type": "boolean",
+                                        "label": "Is Biz Notification"
+                                    },
+                                    {
+                                        "name": "isDoc",
+                                        "type": "boolean",
+                                        "label": "Is Doc"
+                                    },
+                                    {
+                                        "name": "isLinkPreview",
+                                        "type": "boolean",
+                                        "label": "Is Link Preview"
+                                    },
+                                    {
+                                        "name": "isPSA",
+                                        "type": "boolean",
+                                        "label": "Is PSA"
+                                    },
+                                    {
+                                        "name": "isRevoked",
+                                        "type": "boolean",
+                                        "label": "Is Revoked"
+                                    },
+                                    {
+                                        "name": "isUnreadType",
+                                        "type": "boolean",
+                                        "label": "Is Unread Type"
+                                    },
+                                    {
+                                        "name": "isFailed",
+                                        "type": "boolean",
+                                        "label": "Is Failed"
+                                    },
+                                    {
+                                        "name": "notifyName",
+                                        "type": "text",
+                                        "label": "Notify Name"
+                                    },
+                                    {
+                                        "name": "source",
+                                        "type": "text",
+                                        "label": "Source"
+                                    }
+                                ],
+                                "type": "collection",
+                                "label": "Meta"
+                            }
+                        ],
+                        "type": "collection",
+                        "label": "Data"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 19,
+            "module": "util:SetVariable2",
+            "version": 1,
+            "parameters": {},
+            "mapper": {
+                "name": "Coleccion de metadata",
+                "scope": "roundtrip",
+                "value": "{{toCollection(1.data.metadata; \"key\"; \"value\")}}"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 300,
+                    "y": 150
+                },
+                "restore": {
+                    "expect": {
+                        "scope": {
+                            "label": "One cycle"
+                        }
+                    }
+                },
+                "expect": [
+                    {
+                        "name": "name",
+                        "type": "text",
+                        "label": "Variable name",
+                        "required": true
+                    },
+                    {
+                        "name": "scope",
+                        "type": "select",
+                        "label": "Variable lifetime",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "roundtrip",
+                                "execution"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "value",
+                        "type": "any",
+                        "label": "Variable value"
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "Coleccion de metadata",
+                        "type": "any",
+                        "label": "Coleccion de metadata"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 21,
+            "module": "util:SetVariables",
+            "version": 1,
+            "parameters": {},
+            "mapper": {
+                "scope": "roundtrip",
+                "variables": [
+                    {
+                        "name": "contacto_enviado_safe",
+                        "value": "{{ifempty(19.`Coleccion de metadata`.capi_contacto_enviado; \"false\")}}"
+                    },
+                    {
+                        "name": "schedule_enviado_safe",
+                        "value": "{{ifempty(19.`Coleccion de metadata`.capi_schedule_enviado; \"false\")}}"
+                    },
+                    {
+                        "name": "purchase_enviado_safe",
+                        "value": "{{ifempty(19.`Coleccion de metadata`.capi_purchase_enviado; \"false\")}}"
+                    }
+                ]
+            },
+            "metadata": {
+                "designer": {
+                    "x": 600,
+                    "y": 150
+                },
+                "restore": {
+                    "expect": {
+                        "scope": {
+                            "label": "One cycle"
+                        },
+                        "variables": {
+                            "items": [
+                                null,
+                                null,
+                                null
+                            ]
+                        }
+                    }
+                },
+                "expect": [
+                    {
+                        "name": "variables",
+                        "spec": [
+                            {
+                                "name": "name",
+                                "type": "text",
+                                "label": "Variable name",
+                                "required": true
+                            },
+                            {
+                                "name": "value",
+                                "type": "any",
+                                "label": "Variable value"
+                            }
+                        ],
+                        "type": "array",
+                        "label": "Variables"
+                    },
+                    {
+                        "name": "scope",
+                        "type": "select",
+                        "label": "Variable lifetime",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "roundtrip",
+                                "execution"
+                            ]
+                        }
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "contacto_enviado_safe",
+                        "type": "any",
+                        "label": "contacto_enviado_safe"
+                    },
+                    {
+                        "name": "schedule_enviado_safe",
+                        "type": "any",
+                        "label": "schedule_enviado_safe"
+                    },
+                    {
+                        "name": "purchase_enviado_safe",
+                        "type": "any",
+                        "label": "purchase_enviado_safe"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 2,
+            "module": "builtin:BasicRouter",
+            "version": 1,
+            "mapper": null,
+            "metadata": {
+                "designer": {
+                    "x": 900,
+                    "y": 150
+                }
+            },
+            "routes": [
+                {
+                    "flow": [
+                        {
+                            "id": 22,
+                            "module": "facebook-conversions-api:SendEvent",
+                            "version": 2,
+                            "parameters": {
+                                "__IMTCONN__": 5974820
+                            },
+                            "filter": {
+                                "name": "Caso contacto",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{1.data.labels}}",
+                                            "b": "contacto",
+                                            "o": "text:contain"
+                                        },
+                                        {
+                                            "a": "{{21.contacto_enviado_safe}}",
+                                            "b": "false",
+                                            "o": "text:equal"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "data": [
+                                    {
+                                        "user_data": {
+                                            "ct": "Tecámac",
+                                            "fn": "{{1.data.contact.name}}",
+                                            "ph": "{{1.data.contact.phone}}",
+                                            "st": "mx",
+                                            "country": "mx",
+                                            "lead_id": "{{19.`Coleccion de metadata`.lead_id}}",
+                                            "external_id": "{{1.data.contact.wid}}"
+                                        },
+                                        "event_name": "Contact",
+                                        "event_time": "{{timestamp}}",
+                                        "action_source": "chat"
+                                    }
+                                ]
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 1200,
+                                    "y": 0
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "ldu": {
+                                            "mode": "chose"
+                                        },
+                                        "data": {
+                                            "mode": "chose",
+                                            "items": [
+                                                {
+                                                    "opt_out": {
+                                                        "mode": "chose"
+                                                    },
+                                                    "event_name": {
+                                                        "mode": "chose",
+                                                        "label": "Contact"
+                                                    },
+                                                    "custom_data": {
+                                                        "mode": "chose"
+                                                    },
+                                                    "action_source": {
+                                                        "mode": "chose",
+                                                        "label": "Chat"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "parameters": {
+                                        "__IMTCONN__": {
+                                            "data": {
+                                                "scoped": "true",
+                                                "connection": "facebook-business-extension"
+                                            },
+                                            "label": "White Dental CAPI (Make System User (::white_dental_123))"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "__IMTCONN__",
+                                        "type": "account:facebook-business-extension",
+                                        "label": "Connection",
+                                        "required": true
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "data",
+                                        "spec": [
+                                            {
+                                                "name": "event_id",
+                                                "type": "text",
+                                                "label": "Event ID"
+                                            },
+                                            {
+                                                "name": "event_name",
+                                                "type": "select",
+                                                "label": "Event Name",
+                                                "options": [
+                                                    {
+                                                        "label": "Add Payment Info",
+                                                        "value": "AddPaymentInfo"
+                                                    },
+                                                    {
+                                                        "label": "Add To Cart",
+                                                        "value": "AddToCart"
+                                                    },
+                                                    {
+                                                        "label": "Add To Wishlist",
+                                                        "value": "AddToWishlist"
+                                                    },
+                                                    {
+                                                        "label": "Complete Registration",
+                                                        "value": "CompleteRegistration"
+                                                    },
+                                                    {
+                                                        "label": "Contact",
+                                                        "value": "Contact"
+                                                    },
+                                                    {
+                                                        "label": "Customize Product",
+                                                        "value": "CustomizeProduct"
+                                                    },
+                                                    {
+                                                        "label": "Donate",
+                                                        "value": "Donate"
+                                                    },
+                                                    {
+                                                        "label": "FindLocation",
+                                                        "value": "FindLocation"
+                                                    },
+                                                    {
+                                                        "label": "Initiate Checkout",
+                                                        "value": "InitiateCheckout"
+                                                    },
+                                                    {
+                                                        "label": "Lead",
+                                                        "value": "Lead"
+                                                    },
+                                                    {
+                                                        "label": "Page View",
+                                                        "value": "PageView"
+                                                    },
+                                                    {
+                                                        "label": "Purchase",
+                                                        "value": "Purchase",
+                                                        "nested": [
+                                                            {
+                                                                "help": "Currency must be a valid [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) three digit currency code. Example: `USD`.",
+                                                                "name": "custom_data_currency",
+                                                                "type": "text",
+                                                                "label": "Currency",
+                                                                "required": true
+                                                            },
+                                                            {
+                                                                "help": "This could be a monetary value or a value in some other metric. Example: `142.54`.",
+                                                                "name": "custom_data_value",
+                                                                "type": "number",
+                                                                "label": "Value",
+                                                                "required": true
+                                                            },
+                                                            {
+                                                                "name": "custom_data_order_id",
+                                                                "type": "text",
+                                                                "label": "Order ID",
+                                                                "required": true
+                                                            }
+                                                        ]
+                                                    },
+                                                    {
+                                                        "label": "Other",
+                                                        "value": "Other"
+                                                    },
+                                                    {
+                                                        "label": "Schedule",
+                                                        "value": "Schedule"
+                                                    },
+                                                    {
+                                                        "label": "Search",
+                                                        "value": "Search"
+                                                    },
+                                                    {
+                                                        "label": "Start Trial",
+                                                        "value": "StartTrial"
+                                                    },
+                                                    {
+                                                        "label": "Submit Application",
+                                                        "value": "SubmitApplication"
+                                                    },
+                                                    {
+                                                        "label": "Subscribe",
+                                                        "value": "Subscribe"
+                                                    },
+                                                    {
+                                                        "label": "View Content",
+                                                        "value": "ViewContent"
+                                                    }
+                                                ],
+                                                "required": true,
+                                                "validate": false
+                                            },
+                                            {
+                                                "name": "event_time",
+                                                "type": "date",
+                                                "label": "Event Time",
+                                                "required": true
+                                            },
+                                            {
+                                                "name": "action_source",
+                                                "type": "select",
+                                                "label": "Action Source",
+                                                "options": [
+                                                    {
+                                                        "label": "Email",
+                                                        "value": "email"
+                                                    },
+                                                    {
+                                                        "label": "Website",
+                                                        "value": "website"
+                                                    },
+                                                    {
+                                                        "label": "App",
+                                                        "value": "app"
+                                                    },
+                                                    {
+                                                        "label": "Phone call",
+                                                        "value": "phone_call"
+                                                    },
+                                                    {
+                                                        "label": "Chat",
+                                                        "value": "chat"
+                                                    },
+                                                    {
+                                                        "label": "Physical store",
+                                                        "value": "physical_store"
+                                                    },
+                                                    {
+                                                        "label": "System generated",
+                                                        "value": "system_generated"
+                                                    },
+                                                    {
+                                                        "label": "Other",
+                                                        "value": "other"
+                                                    }
+                                                ],
+                                                "required": true
+                                            },
+                                            {
+                                                "type": "html",
+                                                "label": "<div class=\"i-exception\"><div class=\"i-exception-description\"><h5>Reminder:</h5><p class=\"text-muted\">You do not have to hash the following inputs with `sha256()`. We will do that for you.</p></div></div>"
+                                            },
+                                            {
+                                                "name": "user_data",
+                                                "spec": [
+                                                    {
+                                                        "name": "em",
+                                                        "type": "text",
+                                                        "label": "Email"
+                                                    },
+                                                    {
+                                                        "name": "ph",
+                                                        "type": "text",
+                                                        "label": "Phone"
+                                                    },
+                                                    {
+                                                        "name": "ge",
+                                                        "type": "text",
+                                                        "label": "Gender"
+                                                    },
+                                                    {
+                                                        "name": "db",
+                                                        "type": "date",
+                                                        "label": "Day of Birth"
+                                                    },
+                                                    {
+                                                        "name": "ln",
+                                                        "type": "text",
+                                                        "label": "Last name"
+                                                    },
+                                                    {
+                                                        "name": "fn",
+                                                        "type": "text",
+                                                        "label": "First name"
+                                                    },
+                                                    {
+                                                        "name": "ct",
+                                                        "type": "text",
+                                                        "label": "City"
+                                                    },
+                                                    {
+                                                        "name": "st",
+                                                        "type": "text",
+                                                        "label": "State"
+                                                    },
+                                                    {
+                                                        "name": "zp",
+                                                        "type": "text",
+                                                        "label": "Zip"
+                                                    },
+                                                    {
+                                                        "name": "country",
+                                                        "type": "text",
+                                                        "label": "Country"
+                                                    },
+                                                    {
+                                                        "name": "external_id",
+                                                        "type": "text",
+                                                        "label": "External ID"
+                                                    },
+                                                    {
+                                                        "name": "client_ip_address",
+                                                        "type": "text",
+                                                        "label": "Client IP Address"
+                                                    },
+                                                    {
+                                                        "name": "client_user_agent",
+                                                        "type": "text",
+                                                        "label": "Client User Agent"
+                                                    },
+                                                    {
+                                                        "name": "fbc",
+                                                        "type": "text",
+                                                        "label": "Click ID"
+                                                    },
+                                                    {
+                                                        "name": "fbp",
+                                                        "type": "text",
+                                                        "label": "Browser ID"
+                                                    },
+                                                    {
+                                                        "name": "subscription_id",
+                                                        "type": "text",
+                                                        "label": "Subscription ID"
+                                                    },
+                                                    {
+                                                        "name": "lead_id",
+                                                        "type": "text",
+                                                        "label": "Lead ID"
+                                                    },
+                                                    {
+                                                        "name": "fb_login_id",
+                                                        "type": "text",
+                                                        "label": "Facebook Login ID"
+                                                    }
+                                                ],
+                                                "type": "collection",
+                                                "label": "User Data",
+                                                "required": true
+                                            },
+                                            {
+                                                "name": "custom_data",
+                                                "spec": [
+                                                    {
+                                                        "name": "name",
+                                                        "type": "text",
+                                                        "label": "Name",
+                                                        "required": true
+                                                    },
+                                                    {
+                                                        "name": "value",
+                                                        "type": "any",
+                                                        "label": "Value",
+                                                        "required": true
+                                                    }
+                                                ],
+                                                "type": "array",
+                                                "label": "Custom Data"
+                                            },
+                                            {
+                                                "name": "opt_out",
+                                                "type": "boolean",
+                                                "label": "Opt Out"
+                                            },
+                                            {
+                                                "name": "event_source_url",
+                                                "type": "text",
+                                                "label": "Event Source URL"
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Data",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "pixelId",
+                                        "type": "text",
+                                        "label": "Pixel ID"
+                                    },
+                                    {
+                                        "name": "test_event_code",
+                                        "type": "text",
+                                        "label": "Test Event Code"
+                                    },
+                                    {
+                                        "name": "ldu",
+                                        "type": "boolean",
+                                        "label": "Enable Limited Data Use"
+                                    },
+                                    {
+                                        "name": "data",
+                                        "spec": [
+                                            {
+                                                "name": "event_id",
+                                                "type": "text",
+                                                "label": "Event ID"
+                                            },
+                                            {
+                                                "name": "event_name",
+                                                "type": "select",
+                                                "label": "Event Name",
+                                                "options": [
+                                                    {
+                                                        "label": "Add Payment Info",
+                                                        "value": "AddPaymentInfo"
+                                                    },
+                                                    {
+                                                        "label": "Add To Cart",
+                                                        "value": "AddToCart"
+                                                    },
+                                                    {
+                                                        "label": "Add To Wishlist",
+                                                        "value": "AddToWishlist"
+                                                    },
+                                                    {
+                                                        "label": "Complete Registration",
+                                                        "value": "CompleteRegistration"
+                                                    },
+                                                    {
+                                                        "label": "Contact",
+                                                        "value": "Contact"
+                                                    },
+                                                    {
+                                                        "label": "Customize Product",
+                                                        "value": "CustomizeProduct"
+                                                    },
+                                                    {
+                                                        "label": "Donate",
+                                                        "value": "Donate"
+                                                    },
+                                                    {
+                                                        "label": "FindLocation",
+                                                        "value": "FindLocation"
+                                                    },
+                                                    {
+                                                        "label": "Initiate Checkout",
+                                                        "value": "InitiateCheckout"
+                                                    },
+                                                    {
+                                                        "label": "Lead",
+                                                        "value": "Lead"
+                                                    },
+                                                    {
+                                                        "label": "Page View",
+                                                        "value": "PageView"
+                                                    },
+                                                    {
+                                                        "label": "Purchase",
+                                                        "value": "Purchase",
+                                                        "nested": [
+                                                            {
+                                                                "help": "Currency must be a valid [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) three digit currency code. Example: `USD`.",
+                                                                "name": "custom_data_currency",
+                                                                "type": "text",
+                                                                "label": "Currency",
+                                                                "required": true
+                                                            },
+                                                            {
+                                                                "help": "This could be a monetary value or a value in some other metric. Example: `142.54`.",
+                                                                "name": "custom_data_value",
+                                                                "type": "number",
+                                                                "label": "Value",
+                                                                "required": true
+                                                            },
+                                                            {
+                                                                "name": "custom_data_order_id",
+                                                                "type": "text",
+                                                                "label": "Order ID",
+                                                                "required": true
+                                                            }
+                                                        ]
+                                                    },
+                                                    {
+                                                        "label": "Other",
+                                                        "value": "Other"
+                                                    },
+                                                    {
+                                                        "label": "Schedule",
+                                                        "value": "Schedule"
+                                                    },
+                                                    {
+                                                        "label": "Search",
+                                                        "value": "Search"
+                                                    },
+                                                    {
+                                                        "label": "Start Trial",
+                                                        "value": "StartTrial"
+                                                    },
+                                                    {
+                                                        "label": "Submit Application",
+                                                        "value": "SubmitApplication"
+                                                    },
+                                                    {
+                                                        "label": "Subscribe",
+                                                        "value": "Subscribe"
+                                                    },
+                                                    {
+                                                        "label": "View Content",
+                                                        "value": "ViewContent"
+                                                    }
+                                                ],
+                                                "required": true,
+                                                "validate": false
+                                            },
+                                            {
+                                                "name": "event_time",
+                                                "type": "date",
+                                                "label": "Event Time",
+                                                "required": true
+                                            },
+                                            {
+                                                "name": "action_source",
+                                                "type": "select",
+                                                "label": "Action Source",
+                                                "options": [
+                                                    {
+                                                        "label": "Email",
+                                                        "value": "email"
+                                                    },
+                                                    {
+                                                        "label": "Website",
+                                                        "value": "website"
+                                                    },
+                                                    {
+                                                        "label": "App",
+                                                        "value": "app"
+                                                    },
+                                                    {
+                                                        "label": "Phone call",
+                                                        "value": "phone_call"
+                                                    },
+                                                    {
+                                                        "label": "Chat",
+                                                        "value": "chat"
+                                                    },
+                                                    {
+                                                        "label": "Physical store",
+                                                        "value": "physical_store"
+                                                    },
+                                                    {
+                                                        "label": "System generated",
+                                                        "value": "system_generated"
+                                                    },
+                                                    {
+                                                        "label": "Other",
+                                                        "value": "other"
+                                                    }
+                                                ],
+                                                "required": true
+                                            },
+                                            {
+                                                "type": "html",
+                                                "label": "<div class=\"i-exception\"><div class=\"i-exception-description\"><h5>Reminder:</h5><p class=\"text-muted\">You do not have to hash the following inputs with `sha256()`. We will do that for you.</p></div></div>"
+                                            },
+                                            {
+                                                "name": "user_data",
+                                                "spec": [
+                                                    {
+                                                        "name": "em",
+                                                        "type": "text",
+                                                        "label": "Email"
+                                                    },
+                                                    {
+                                                        "name": "ph",
+                                                        "type": "text",
+                                                        "label": "Phone"
+                                                    },
+                                                    {
+                                                        "name": "ge",
+                                                        "type": "text",
+                                                        "label": "Gender"
+                                                    },
+                                                    {
+                                                        "name": "db",
+                                                        "type": "date",
+                                                        "label": "Day of Birth"
+                                                    },
+                                                    {
+                                                        "name": "ln",
+                                                        "type": "text",
+                                                        "label": "Last name"
+                                                    },
+                                                    {
+                                                        "name": "fn",
+                                                        "type": "text",
+                                                        "label": "First name"
+                                                    },
+                                                    {
+                                                        "name": "ct",
+                                                        "type": "text",
+                                                        "label": "City"
+                                                    },
+                                                    {
+                                                        "name": "st",
+                                                        "type": "text",
+                                                        "label": "State"
+                                                    },
+                                                    {
+                                                        "name": "zp",
+                                                        "type": "text",
+                                                        "label": "Zip"
+                                                    },
+                                                    {
+                                                        "name": "country",
+                                                        "type": "text",
+                                                        "label": "Country"
+                                                    },
+                                                    {
+                                                        "name": "external_id",
+                                                        "type": "text",
+                                                        "label": "External ID"
+                                                    },
+                                                    {
+                                                        "name": "client_ip_address",
+                                                        "type": "text",
+                                                        "label": "Client IP Address"
+                                                    },
+                                                    {
+                                                        "name": "client_user_agent",
+                                                        "type": "text",
+                                                        "label": "Client User Agent"
+                                                    },
+                                                    {
+                                                        "name": "fbc",
+                                                        "type": "text",
+                                                        "label": "Click ID"
+                                                    },
+                                                    {
+                                                        "name": "fbp",
+                                                        "type": "text",
+                                                        "label": "Browser ID"
+                                                    },
+                                                    {
+                                                        "name": "subscription_id",
+                                                        "type": "text",
+                                                        "label": "Subscription ID"
+                                                    },
+                                                    {
+                                                        "name": "lead_id",
+                                                        "type": "text",
+                                                        "label": "Lead ID"
+                                                    },
+                                                    {
+                                                        "name": "fb_login_id",
+                                                        "type": "text",
+                                                        "label": "Facebook Login ID"
+                                                    }
+                                                ],
+                                                "type": "collection",
+                                                "label": "User Data",
+                                                "required": true
+                                            },
+                                            {
+                                                "name": "custom_data",
+                                                "spec": [
+                                                    {
+                                                        "name": "name",
+                                                        "type": "text",
+                                                        "label": "Name",
+                                                        "required": true
+                                                    },
+                                                    {
+                                                        "name": "value",
+                                                        "type": "any",
+                                                        "label": "Value",
+                                                        "required": true
+                                                    }
+                                                ],
+                                                "type": "array",
+                                                "label": "Custom Data"
+                                            },
+                                            {
+                                                "name": "opt_out",
+                                                "type": "boolean",
+                                                "label": "Opt Out"
+                                            },
+                                            {
+                                                "name": "event_source_url",
+                                                "type": "text",
+                                                "label": "Event Source URL"
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Data",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "pixelId",
+                                        "type": "text",
+                                        "label": "Pixel ID"
+                                    },
+                                    {
+                                        "name": "test_event_code",
+                                        "type": "text",
+                                        "label": "Test Event Code"
+                                    },
+                                    {
+                                        "name": "ldu",
+                                        "type": "boolean",
+                                        "label": "Enable Limited Data Use"
+                                    }
+                                ],
+                                "advanced": true
+                            }
+                        },
+                        {
+                            "id": 25,
+                            "module": "app#wassenger-0waevn:updateMetadata",
+                            "version": 1,
+                            "parameters": {
+                                "__IMTCONN__": 5974439
+                            },
+                            "mapper": {
+                                "id": "{{1.id}}",
+                                "deviceID": "68e5a8c2819b044d9c653032",
+                                "metadata": [
+                                    {
+                                        "key": "capi_contacto_enviado",
+                                        "value": "true"
+                                    }
+                                ]
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 1500,
+                                    "y": 0
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "deviceID": {
+                                            "mode": "chose",
+                                            "label": "Atención Pacientes (+5213222081754)"
+                                        },
+                                        "metadata": {
+                                            "mode": "chose",
+                                            "items": [
+                                                null
+                                            ]
+                                        }
+                                    },
+                                    "parameters": {
+                                        "__IMTCONN__": {
+                                            "data": {
+                                                "scoped": "true",
+                                                "connection": "app#wassenger-0waevn"
+                                            },
+                                            "label": "Wassenger White Dental"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "__IMTCONN__",
+                                        "type": "account:app#wassenger-0waevn",
+                                        "label": "Connection",
+                                        "required": true
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "deviceID",
+                                        "type": "select",
+                                        "label": "Device",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "id",
+                                        "type": "text",
+                                        "label": "Contact ID",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "metadata",
+                                        "spec": [
+                                            {
+                                                "name": "key",
+                                                "type": "text",
+                                                "label": "Key",
+                                                "pattern": "^[a-zA-Z0-9_]*$"
+                                            },
+                                            {
+                                                "max": 300,
+                                                "name": "value",
+                                                "type": "text",
+                                                "label": "Value"
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Metadata"
+                                    },
+                                    {
+                                        "name": "deviceID",
+                                        "type": "select",
+                                        "label": "Device",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "id",
+                                        "type": "text",
+                                        "label": "Contact ID",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "metadata",
+                                        "spec": [
+                                            {
+                                                "name": "key",
+                                                "type": "text",
+                                                "label": "Key",
+                                                "pattern": "^[a-zA-Z0-9_]*$"
+                                            },
+                                            {
+                                                "max": 300,
+                                                "name": "value",
+                                                "type": "text",
+                                                "label": "Value"
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Metadata"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "flow": [
+                        {
+                            "id": 26,
+                            "module": "facebook-conversions-api:SendEvent",
+                            "version": 2,
+                            "parameters": {
+                                "__IMTCONN__": 5974820
+                            },
+                            "filter": {
+                                "name": "Caso purchase",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{1.data.chat.labels}}",
+                                            "b": "tratamiento cerrado",
+                                            "o": "text:contain"
+                                        },
+                                        {
+                                            "a": "{{21.purchase_enviado_safe}}",
+                                            "b": "false",
+                                            "o": "text:equal"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "data": [
+                                    {
+                                        "event_id": "{{lower(1.data.name)}}_{{formatDate(now; \"YYYY-MM-DD\")}}_purchase",
+                                        "user_data": {
+                                            "ct": "Tecámac",
+                                            "ph": "{{1.data.phone}}",
+                                            "st": "mx",
+                                            "country": "mx",
+                                            "lead_id": "{{19.`Coleccion de metadata`.lead_id}}",
+                                            "external_id": "{{1.data.wid}}"
+                                        },
+                                        "event_name": "Purchase",
+                                        "event_time": "{{timestamp}}",
+                                        "action_source": "physical_store",
+                                        "custom_data_value": "{{19.`Coleccion de metadata`.tratamiento_cerrado}}",
+                                        "custom_data_currency": "MXN",
+                                        "custom_data_order_id": "{{lower(1.data.contact.name)}}_{{formatDate(now; \"YYYY-MM-DD\")}}_purchase"
+                                    }
+                                ]
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 1200,
+                                    "y": 300
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "ldu": {
+                                            "mode": "chose"
+                                        },
+                                        "data": {
+                                            "mode": "chose",
+                                            "items": [
+                                                {
+                                                    "opt_out": {
+                                                        "mode": "chose"
+                                                    },
+                                                    "event_name": {
+                                                        "mode": "chose",
+                                                        "label": "Purchase"
+                                                    },
+                                                    "custom_data": {
+                                                        "mode": "chose"
+                                                    },
+                                                    "action_source": {
+                                                        "mode": "chose",
+                                                        "label": "Physical store"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "parameters": {
+                                        "__IMTCONN__": {
+                                            "data": {
+                                                "scoped": "true",
+                                                "connection": "facebook-business-extension"
+                                            },
+                                            "label": "White Dental CAPI (Make System User (::white_dental_123))"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "__IMTCONN__",
+                                        "type": "account:facebook-business-extension",
+                                        "label": "Connection",
+                                        "required": true
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "data",
+                                        "spec": [
+                                            {
+                                                "name": "event_id",
+                                                "type": "text",
+                                                "label": "Event ID"
+                                            },
+                                            {
+                                                "name": "event_name",
+                                                "type": "select",
+                                                "label": "Event Name",
+                                                "options": [
+                                                    {
+                                                        "label": "Add Payment Info",
+                                                        "value": "AddPaymentInfo"
+                                                    },
+                                                    {
+                                                        "label": "Add To Cart",
+                                                        "value": "AddToCart"
+                                                    },
+                                                    {
+                                                        "label": "Add To Wishlist",
+                                                        "value": "AddToWishlist"
+                                                    },
+                                                    {
+                                                        "label": "Complete Registration",
+                                                        "value": "CompleteRegistration"
+                                                    },
+                                                    {
+                                                        "label": "Contact",
+                                                        "value": "Contact"
+                                                    },
+                                                    {
+                                                        "label": "Customize Product",
+                                                        "value": "CustomizeProduct"
+                                                    },
+                                                    {
+                                                        "label": "Donate",
+                                                        "value": "Donate"
+                                                    },
+                                                    {
+                                                        "label": "FindLocation",
+                                                        "value": "FindLocation"
+                                                    },
+                                                    {
+                                                        "label": "Initiate Checkout",
+                                                        "value": "InitiateCheckout"
+                                                    },
+                                                    {
+                                                        "label": "Lead",
+                                                        "value": "Lead"
+                                                    },
+                                                    {
+                                                        "label": "Page View",
+                                                        "value": "PageView"
+                                                    },
+                                                    {
+                                                        "label": "Purchase",
+                                                        "value": "Purchase",
+                                                        "nested": [
+                                                            {
+                                                                "help": "Currency must be a valid [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) three digit currency code. Example: `USD`.",
+                                                                "name": "custom_data_currency",
+                                                                "type": "text",
+                                                                "label": "Currency",
+                                                                "required": true
+                                                            },
+                                                            {
+                                                                "help": "This could be a monetary value or a value in some other metric. Example: `142.54`.",
+                                                                "name": "custom_data_value",
+                                                                "type": "number",
+                                                                "label": "Value",
+                                                                "required": true
+                                                            },
+                                                            {
+                                                                "name": "custom_data_order_id",
+                                                                "type": "text",
+                                                                "label": "Order ID",
+                                                                "required": true
+                                                            }
+                                                        ]
+                                                    },
+                                                    {
+                                                        "label": "Other",
+                                                        "value": "Other"
+                                                    },
+                                                    {
+                                                        "label": "Schedule",
+                                                        "value": "Schedule"
+                                                    },
+                                                    {
+                                                        "label": "Search",
+                                                        "value": "Search"
+                                                    },
+                                                    {
+                                                        "label": "Start Trial",
+                                                        "value": "StartTrial"
+                                                    },
+                                                    {
+                                                        "label": "Submit Application",
+                                                        "value": "SubmitApplication"
+                                                    },
+                                                    {
+                                                        "label": "Subscribe",
+                                                        "value": "Subscribe"
+                                                    },
+                                                    {
+                                                        "label": "View Content",
+                                                        "value": "ViewContent"
+                                                    }
+                                                ],
+                                                "required": true,
+                                                "validate": false
+                                            },
+                                            {
+                                                "name": "event_time",
+                                                "type": "date",
+                                                "label": "Event Time",
+                                                "required": true
+                                            },
+                                            {
+                                                "name": "action_source",
+                                                "type": "select",
+                                                "label": "Action Source",
+                                                "options": [
+                                                    {
+                                                        "label": "Email",
+                                                        "value": "email"
+                                                    },
+                                                    {
+                                                        "label": "Website",
+                                                        "value": "website"
+                                                    },
+                                                    {
+                                                        "label": "App",
+                                                        "value": "app"
+                                                    },
+                                                    {
+                                                        "label": "Phone call",
+                                                        "value": "phone_call"
+                                                    },
+                                                    {
+                                                        "label": "Chat",
+                                                        "value": "chat"
+                                                    },
+                                                    {
+                                                        "label": "Physical store",
+                                                        "value": "physical_store"
+                                                    },
+                                                    {
+                                                        "label": "System generated",
+                                                        "value": "system_generated"
+                                                    },
+                                                    {
+                                                        "label": "Other",
+                                                        "value": "other"
+                                                    }
+                                                ],
+                                                "required": true
+                                            },
+                                            {
+                                                "type": "html",
+                                                "label": "<div class=\"i-exception\"><div class=\"i-exception-description\"><h5>Reminder:</h5><p class=\"text-muted\">You do not have to hash the following inputs with `sha256()`. We will do that for you.</p></div></div>"
+                                            },
+                                            {
+                                                "name": "user_data",
+                                                "spec": [
+                                                    {
+                                                        "name": "em",
+                                                        "type": "text",
+                                                        "label": "Email"
+                                                    },
+                                                    {
+                                                        "name": "ph",
+                                                        "type": "text",
+                                                        "label": "Phone"
+                                                    },
+                                                    {
+                                                        "name": "ge",
+                                                        "type": "text",
+                                                        "label": "Gender"
+                                                    },
+                                                    {
+                                                        "name": "db",
+                                                        "type": "date",
+                                                        "label": "Day of Birth"
+                                                    },
+                                                    {
+                                                        "name": "ln",
+                                                        "type": "text",
+                                                        "label": "Last name"
+                                                    },
+                                                    {
+                                                        "name": "fn",
+                                                        "type": "text",
+                                                        "label": "First name"
+                                                    },
+                                                    {
+                                                        "name": "ct",
+                                                        "type": "text",
+                                                        "label": "City"
+                                                    },
+                                                    {
+                                                        "name": "st",
+                                                        "type": "text",
+                                                        "label": "State"
+                                                    },
+                                                    {
+                                                        "name": "zp",
+                                                        "type": "text",
+                                                        "label": "Zip"
+                                                    },
+                                                    {
+                                                        "name": "country",
+                                                        "type": "text",
+                                                        "label": "Country"
+                                                    },
+                                                    {
+                                                        "name": "external_id",
+                                                        "type": "text",
+                                                        "label": "External ID"
+                                                    },
+                                                    {
+                                                        "name": "client_ip_address",
+                                                        "type": "text",
+                                                        "label": "Client IP Address"
+                                                    },
+                                                    {
+                                                        "name": "client_user_agent",
+                                                        "type": "text",
+                                                        "label": "Client User Agent"
+                                                    },
+                                                    {
+                                                        "name": "fbc",
+                                                        "type": "text",
+                                                        "label": "Click ID"
+                                                    },
+                                                    {
+                                                        "name": "fbp",
+                                                        "type": "text",
+                                                        "label": "Browser ID"
+                                                    },
+                                                    {
+                                                        "name": "subscription_id",
+                                                        "type": "text",
+                                                        "label": "Subscription ID"
+                                                    },
+                                                    {
+                                                        "name": "lead_id",
+                                                        "type": "text",
+                                                        "label": "Lead ID"
+                                                    },
+                                                    {
+                                                        "name": "fb_login_id",
+                                                        "type": "text",
+                                                        "label": "Facebook Login ID"
+                                                    }
+                                                ],
+                                                "type": "collection",
+                                                "label": "User Data",
+                                                "required": true
+                                            },
+                                            {
+                                                "name": "custom_data",
+                                                "spec": [
+                                                    {
+                                                        "name": "name",
+                                                        "type": "text",
+                                                        "label": "Name",
+                                                        "required": true
+                                                    },
+                                                    {
+                                                        "name": "value",
+                                                        "type": "any",
+                                                        "label": "Value",
+                                                        "required": true
+                                                    }
+                                                ],
+                                                "type": "array",
+                                                "label": "Custom Data"
+                                            },
+                                            {
+                                                "name": "opt_out",
+                                                "type": "boolean",
+                                                "label": "Opt Out"
+                                            },
+                                            {
+                                                "name": "event_source_url",
+                                                "type": "text",
+                                                "label": "Event Source URL"
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Data",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "pixelId",
+                                        "type": "text",
+                                        "label": "Pixel ID"
+                                    },
+                                    {
+                                        "name": "test_event_code",
+                                        "type": "text",
+                                        "label": "Test Event Code"
+                                    },
+                                    {
+                                        "name": "ldu",
+                                        "type": "boolean",
+                                        "label": "Enable Limited Data Use"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "id": 27,
+                            "module": "app#wassenger-0waevn:updateMetadata",
+                            "version": 1,
+                            "parameters": {
+                                "__IMTCONN__": 5974439
+                            },
+                            "mapper": {
+                                "id": "{{1.id}}",
+                                "deviceID": "68e5a8c2819b044d9c653032",
+                                "metadata": [
+                                    {
+                                        "key": "capi_purchase_enviado",
+                                        "value": "true"
+                                    }
+                                ]
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 1498,
+                                    "y": 300
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "deviceID": {
+                                            "mode": "chose",
+                                            "label": "Atención Pacientes (+5213222081754)"
+                                        },
+                                        "metadata": {
+                                            "mode": "chose",
+                                            "items": [
+                                                null
+                                            ]
+                                        }
+                                    },
+                                    "parameters": {
+                                        "__IMTCONN__": {
+                                            "data": {
+                                                "scoped": "true",
+                                                "connection": "app#wassenger-0waevn"
+                                            },
+                                            "label": "Wassenger White Dental"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "__IMTCONN__",
+                                        "type": "account:app#wassenger-0waevn",
+                                        "label": "Connection",
+                                        "required": true
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "deviceID",
+                                        "type": "select",
+                                        "label": "Device",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "id",
+                                        "type": "text",
+                                        "label": "Contact ID",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "metadata",
+                                        "spec": [
+                                            {
+                                                "name": "key",
+                                                "type": "text",
+                                                "label": "Key",
+                                                "pattern": "^[a-zA-Z0-9_]*$"
+                                            },
+                                            {
+                                                "max": 300,
+                                                "name": "value",
+                                                "type": "text",
+                                                "label": "Value"
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Metadata"
+                                    },
+                                    {
+                                        "name": "deviceID",
+                                        "type": "select",
+                                        "label": "Device",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "id",
+                                        "type": "text",
+                                        "label": "Contact ID",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "metadata",
+                                        "spec": [
+                                            {
+                                                "name": "key",
+                                                "type": "text",
+                                                "label": "Key",
+                                                "pattern": "^[a-zA-Z0-9_]*$"
+                                            },
+                                            {
+                                                "max": 300,
+                                                "name": "value",
+                                                "type": "text",
+                                                "label": "Value"
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Metadata"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "metadata": {
+        "instant": true,
+        "version": 1,
+        "scenario": {
+            "roundtrips": 1,
+            "maxErrors": 3,
+            "autoCommit": true,
+            "autoCommitTriggerLast": true,
+            "sequential": false,
+            "slots": null,
+            "confidential": false,
+            "dataloss": false,
+            "dlq": false,
+            "freshVariables": false
+        },
+        "designer": {
+            "orphans": []
+        },
+        "zone": "us2.make.com",
+        "notes": []
+    }
+}

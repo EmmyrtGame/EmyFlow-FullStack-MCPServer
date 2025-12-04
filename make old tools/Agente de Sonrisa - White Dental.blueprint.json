@@ -1,0 +1,2020 @@
+{
+    "name": "Agente de Sonrisa | White Dental",
+    "flow": [
+        {
+            "id": 1,
+            "module": "gateway:CustomWebHook",
+            "version": 1,
+            "parameters": {
+                "hook": 1494918,
+                "maxResults": 1
+            },
+            "mapper": {},
+            "metadata": {
+                "designer": {
+                    "x": 0,
+                    "y": 150
+                },
+                "restore": {
+                    "parameters": {
+                        "hook": {
+                            "data": {
+                                "editable": "true"
+                            },
+                            "label": "Recibidor de Mensajes | Arte Dental"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "hook",
+                        "type": "hook:gateway-webhook",
+                        "label": "Webhook",
+                        "required": true
+                    },
+                    {
+                        "name": "maxResults",
+                        "type": "number",
+                        "label": "Maximum number of results"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 30,
+            "module": "datastore:SearchRecord",
+            "version": 1,
+            "parameters": {
+                "limit": null,
+                "datastore": 53799,
+                "continueWhenNoRes": false
+            },
+            "mapper": {
+                "sort": [],
+                "filter": [
+                    [
+                        {
+                            "a": "thread_id",
+                            "b": "{{1.thread_id}}",
+                            "o": "text:equal"
+                        },
+                        {
+                            "a": "processed",
+                            "b": "false",
+                            "o": "boolean:equal"
+                        }
+                    ]
+                ],
+                "mappAbleLimit": ""
+            },
+            "metadata": {
+                "designer": {
+                    "x": 300,
+                    "y": 150
+                },
+                "restore": {
+                    "parameters": {
+                        "datastore": {
+                            "label": "Buffer_Mensajes"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "datastore",
+                        "type": "datastore",
+                        "label": "Data store",
+                        "required": true
+                    },
+                    {
+                        "name": "continueWhenNoRes",
+                        "type": "boolean",
+                        "label": "Continue the execution of the route even if the module returns no results"
+                    },
+                    {
+                        "name": "limit",
+                        "type": "uinteger",
+                        "label": "Limit"
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "filter",
+                        "type": "filter",
+                        "label": "Filter",
+                        "options": "rpc://datastore/1.12.1/RpcGetUDTKeys",
+                        "required": true
+                    },
+                    {
+                        "name": "sort",
+                        "spec": [
+                            {
+                                "name": "key",
+                                "type": "select",
+                                "label": "Key",
+                                "dynamic": true,
+                                "options": [],
+                                "required": true
+                            },
+                            {
+                                "name": "order",
+                                "type": "select",
+                                "label": "Order",
+                                "options": [
+                                    {
+                                        "label": "Ascending",
+                                        "value": 1
+                                    },
+                                    {
+                                        "label": "Descending",
+                                        "value": -1
+                                    }
+                                ],
+                                "required": true
+                            }
+                        ],
+                        "type": "array",
+                        "label": "Sort"
+                    },
+                    {
+                        "name": "mappAbleLimit",
+                        "type": "uinteger",
+                        "label": "Mappable Limit"
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "__IMTLENGTH__",
+                        "type": "uinteger",
+                        "label": "Total number of bundles"
+                    },
+                    {
+                        "name": "__IMTINDEX__",
+                        "type": "uinteger",
+                        "label": "Bundle order position"
+                    },
+                    {
+                        "name": "key",
+                        "type": "text",
+                        "label": "Key"
+                    },
+                    {
+                        "name": "data",
+                        "spec": [
+                            {
+                                "help": "Id del mensaje",
+                                "name": "message_id",
+                                "type": "text",
+                                "label": null,
+                                "default": null,
+                                "required": true,
+                                "multiline": false
+                            },
+                            {
+                                "help": "Id del hilo del mensaje",
+                                "name": "thread_id",
+                                "type": "text",
+                                "label": null,
+                                "default": null,
+                                "required": true,
+                                "multiline": false
+                            },
+                            {
+                                "help": "Cuerpo del mensaje",
+                                "name": "message",
+                                "type": "text",
+                                "label": null,
+                                "default": null,
+                                "required": true,
+                                "multiline": true
+                            },
+                            {
+                                "help": "número telefónico del contacto",
+                                "name": "phone",
+                                "type": "text",
+                                "label": null,
+                                "default": null,
+                                "required": true,
+                                "multiline": false
+                            },
+                            {
+                                "help": "Id del contacto",
+                                "name": "contact_id",
+                                "type": "text",
+                                "label": null,
+                                "default": null,
+                                "required": true,
+                                "multiline": false
+                            },
+                            {
+                                "help": "Fecha de entrada del mensaje",
+                                "name": "timestamp",
+                                "type": "date",
+                                "label": null,
+                                "required": true
+                            },
+                            {
+                                "help": "Si el mensaje ya se procesó",
+                                "name": "processed",
+                                "type": "boolean",
+                                "label": null,
+                                "required": true
+                            }
+                        ],
+                        "type": "collection",
+                        "label": "Record"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 2,
+            "module": "util:FunctionSleep",
+            "version": 1,
+            "parameters": {},
+            "filter": {
+                "name": "Solo si es primer mensaje",
+                "conditions": [
+                    [
+                        {
+                            "a": "{{30.`__IMTLENGTH__`}}",
+                            "b": "1",
+                            "o": "number:equal"
+                        }
+                    ]
+                ]
+            },
+            "mapper": {
+                "duration": "28"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 600,
+                    "y": 150
+                },
+                "restore": {},
+                "expect": [
+                    {
+                        "name": "duration",
+                        "type": "uinteger",
+                        "label": "Delay",
+                        "required": true,
+                        "validate": {
+                            "max": 300,
+                            "min": 1
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "id": 3,
+            "module": "datastore:SearchRecord",
+            "version": 1,
+            "parameters": {
+                "limit": null,
+                "datastore": 53799,
+                "continueWhenNoRes": false
+            },
+            "mapper": {
+                "sort": [],
+                "filter": [
+                    [
+                        {
+                            "a": "thread_id",
+                            "b": "{{1.thread_id}}",
+                            "o": "text:equal"
+                        },
+                        {
+                            "a": "processed",
+                            "b": "false",
+                            "o": "boolean:equal"
+                        }
+                    ]
+                ],
+                "mappAbleLimit": ""
+            },
+            "metadata": {
+                "designer": {
+                    "x": 900,
+                    "y": 150
+                },
+                "restore": {
+                    "parameters": {
+                        "datastore": {
+                            "label": "Buffer_Mensajes"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "datastore",
+                        "type": "datastore",
+                        "label": "Data store",
+                        "required": true
+                    },
+                    {
+                        "name": "continueWhenNoRes",
+                        "type": "boolean",
+                        "label": "Continue the execution of the route even if the module returns no results"
+                    },
+                    {
+                        "name": "limit",
+                        "type": "uinteger",
+                        "label": "Limit"
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "filter",
+                        "type": "filter",
+                        "label": "Filter",
+                        "options": "rpc://datastore/1.12.1/RpcGetUDTKeys",
+                        "required": true
+                    },
+                    {
+                        "name": "sort",
+                        "spec": [
+                            {
+                                "name": "key",
+                                "type": "select",
+                                "label": "Key",
+                                "dynamic": true,
+                                "options": [],
+                                "required": true
+                            },
+                            {
+                                "name": "order",
+                                "type": "select",
+                                "label": "Order",
+                                "options": [
+                                    {
+                                        "label": "Ascending",
+                                        "value": 1
+                                    },
+                                    {
+                                        "label": "Descending",
+                                        "value": -1
+                                    }
+                                ],
+                                "required": true
+                            }
+                        ],
+                        "type": "array",
+                        "label": "Sort"
+                    },
+                    {
+                        "name": "mappAbleLimit",
+                        "type": "uinteger",
+                        "label": "Mappable Limit"
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "__IMTLENGTH__",
+                        "type": "uinteger",
+                        "label": "Total number of bundles"
+                    },
+                    {
+                        "name": "__IMTINDEX__",
+                        "type": "uinteger",
+                        "label": "Bundle order position"
+                    },
+                    {
+                        "name": "key",
+                        "type": "text",
+                        "label": "Key"
+                    },
+                    {
+                        "name": "data",
+                        "spec": [
+                            {
+                                "help": "Id del mensaje",
+                                "name": "message_id",
+                                "type": "text",
+                                "label": null,
+                                "default": null,
+                                "required": true,
+                                "multiline": false
+                            },
+                            {
+                                "help": "Id del hilo del mensaje",
+                                "name": "thread_id",
+                                "type": "text",
+                                "label": null,
+                                "default": null,
+                                "required": true,
+                                "multiline": false
+                            },
+                            {
+                                "help": "Cuerpo del mensaje",
+                                "name": "message",
+                                "type": "text",
+                                "label": null,
+                                "default": null,
+                                "required": true,
+                                "multiline": true
+                            },
+                            {
+                                "help": "número telefónico del contacto",
+                                "name": "phone",
+                                "type": "text",
+                                "label": null,
+                                "default": null,
+                                "required": true,
+                                "multiline": false
+                            },
+                            {
+                                "help": "Id del contacto",
+                                "name": "contact_id",
+                                "type": "text",
+                                "label": null,
+                                "default": null,
+                                "required": true,
+                                "multiline": false
+                            },
+                            {
+                                "help": "Fecha de entrada del mensaje",
+                                "name": "timestamp",
+                                "type": "date",
+                                "label": null,
+                                "required": true
+                            },
+                            {
+                                "help": "Si el mensaje ya se procesó",
+                                "name": "processed",
+                                "type": "boolean",
+                                "label": null,
+                                "required": true
+                            }
+                        ],
+                        "type": "collection",
+                        "label": "Record"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 4,
+            "module": "util:TextAggregator",
+            "version": 1,
+            "parameters": {
+                "feeder": 3,
+                "rowSeparator": "\n"
+            },
+            "mapper": {
+                "value": "{{3.data.message}}"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 1200,
+                    "y": 150
+                },
+                "restore": {
+                    "extra": {
+                        "feeder": {
+                            "label": "Data store - Search records [3]"
+                        }
+                    },
+                    "parameters": {
+                        "rowSeparator": {
+                            "label": "New row"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "rowSeparator",
+                        "type": "select",
+                        "label": "Row separator",
+                        "validate": {
+                            "enum": [
+                                "\n",
+                                "\t",
+                                "other"
+                            ]
+                        }
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "value",
+                        "type": "text",
+                        "label": "Text"
+                    }
+                ],
+                "advanced": true
+            }
+        },
+        {
+            "id": 8,
+            "module": "datastore:SearchRecord",
+            "version": 1,
+            "parameters": {
+                "limit": null,
+                "datastore": 53799,
+                "continueWhenNoRes": false
+            },
+            "mapper": {
+                "sort": [],
+                "filter": [
+                    [
+                        {
+                            "a": "thread_id",
+                            "b": "{{1.thread_id}}",
+                            "o": "text:equal"
+                        },
+                        {
+                            "a": "processed",
+                            "b": "false",
+                            "o": "boolean:equal"
+                        }
+                    ]
+                ],
+                "mappAbleLimit": ""
+            },
+            "metadata": {
+                "designer": {
+                    "x": 1500,
+                    "y": 150
+                },
+                "restore": {
+                    "parameters": {
+                        "datastore": {
+                            "label": "Buffer_Mensajes"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "datastore",
+                        "type": "datastore",
+                        "label": "Data store",
+                        "required": true
+                    },
+                    {
+                        "name": "continueWhenNoRes",
+                        "type": "boolean",
+                        "label": "Continue the execution of the route even if the module returns no results"
+                    },
+                    {
+                        "name": "limit",
+                        "type": "uinteger",
+                        "label": "Limit"
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "filter",
+                        "type": "filter",
+                        "label": "Filter",
+                        "options": "rpc://datastore/1.12.1/RpcGetUDTKeys",
+                        "required": true
+                    },
+                    {
+                        "name": "sort",
+                        "spec": [
+                            {
+                                "name": "key",
+                                "type": "select",
+                                "label": "Key",
+                                "dynamic": true,
+                                "options": [],
+                                "required": true
+                            },
+                            {
+                                "name": "order",
+                                "type": "select",
+                                "label": "Order",
+                                "options": [
+                                    {
+                                        "label": "Ascending",
+                                        "value": 1
+                                    },
+                                    {
+                                        "label": "Descending",
+                                        "value": -1
+                                    }
+                                ],
+                                "required": true
+                            }
+                        ],
+                        "type": "array",
+                        "label": "Sort"
+                    },
+                    {
+                        "name": "mappAbleLimit",
+                        "type": "uinteger",
+                        "label": "Mappable Limit"
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "__IMTLENGTH__",
+                        "type": "uinteger",
+                        "label": "Total number of bundles"
+                    },
+                    {
+                        "name": "__IMTINDEX__",
+                        "type": "uinteger",
+                        "label": "Bundle order position"
+                    },
+                    {
+                        "name": "key",
+                        "type": "text",
+                        "label": "Key"
+                    },
+                    {
+                        "name": "data",
+                        "spec": [
+                            {
+                                "help": "Id del mensaje",
+                                "name": "message_id",
+                                "type": "text",
+                                "label": null,
+                                "default": null,
+                                "required": true,
+                                "multiline": false
+                            },
+                            {
+                                "help": "Id del hilo del mensaje",
+                                "name": "thread_id",
+                                "type": "text",
+                                "label": null,
+                                "default": null,
+                                "required": true,
+                                "multiline": false
+                            },
+                            {
+                                "help": "Cuerpo del mensaje",
+                                "name": "message",
+                                "type": "text",
+                                "label": null,
+                                "default": null,
+                                "required": true,
+                                "multiline": true
+                            },
+                            {
+                                "help": "número telefónico del contacto",
+                                "name": "phone",
+                                "type": "text",
+                                "label": null,
+                                "default": null,
+                                "required": true,
+                                "multiline": false
+                            },
+                            {
+                                "help": "Id del contacto",
+                                "name": "contact_id",
+                                "type": "text",
+                                "label": null,
+                                "default": null,
+                                "required": true,
+                                "multiline": false
+                            },
+                            {
+                                "help": "Fecha de entrada del mensaje",
+                                "name": "timestamp",
+                                "type": "date",
+                                "label": null,
+                                "required": true
+                            },
+                            {
+                                "help": "Si el mensaje ya se procesó",
+                                "name": "processed",
+                                "type": "boolean",
+                                "label": null,
+                                "required": true
+                            }
+                        ],
+                        "type": "collection",
+                        "label": "Record"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 12,
+            "module": "builtin:BasicAggregator",
+            "version": 1,
+            "parameters": {
+                "feeder": 8
+            },
+            "mapper": {
+                "key": "{{8.key}}"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 1800,
+                    "y": 150
+                },
+                "restore": {
+                    "extra": {
+                        "feeder": {
+                            "label": "Data store - Search records [8]"
+                        },
+                        "target": {
+                            "label": "Custom"
+                        }
+                    }
+                },
+                "advanced": true
+            }
+        },
+        {
+            "id": 14,
+            "module": "builtin:BasicFeeder",
+            "version": 1,
+            "parameters": {},
+            "mapper": {
+                "array": "{{12.array}}"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 2100,
+                    "y": 150
+                },
+                "restore": {
+                    "expect": {
+                        "array": {
+                            "mode": "edit"
+                        }
+                    }
+                },
+                "expect": [
+                    {
+                        "mode": "edit",
+                        "name": "array",
+                        "spec": [],
+                        "type": "array",
+                        "label": "Array"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 15,
+            "module": "datastore:UpdateRecord",
+            "version": 1,
+            "parameters": {
+                "datastore": 53799
+            },
+            "mapper": {
+                "key": "{{14.key}}",
+                "data": {
+                    "phone": "",
+                    "message": "",
+                    "processed": true,
+                    "thread_id": "",
+                    "timestamp": "",
+                    "contact_id": "",
+                    "message_id": ""
+                },
+                "upsert": true,
+                "overwriteArrays": false
+            },
+            "metadata": {
+                "designer": {
+                    "x": 2400,
+                    "y": 150
+                },
+                "restore": {
+                    "expect": {
+                        "data": {
+                            "nested": {
+                                "processed": {
+                                    "mode": "chose"
+                                }
+                            }
+                        },
+                        "upsert": {
+                            "mode": "chose"
+                        },
+                        "overwriteArrays": {
+                            "mode": "chose"
+                        }
+                    },
+                    "parameters": {
+                        "datastore": {
+                            "label": "Buffer_Mensajes"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "datastore",
+                        "type": "datastore",
+                        "label": "Data store",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "key",
+                        "type": "text",
+                        "label": "Key",
+                        "required": true
+                    },
+                    {
+                        "name": "upsert",
+                        "type": "boolean",
+                        "label": "Insert missing record",
+                        "required": true
+                    },
+                    {
+                        "name": "overwriteArrays",
+                        "type": "boolean",
+                        "label": "Overwrite an existing array in the record",
+                        "required": true
+                    },
+                    {
+                        "name": "data",
+                        "spec": [
+                            {
+                                "name": "message_id",
+                                "type": "text",
+                                "label": null
+                            },
+                            {
+                                "name": "thread_id",
+                                "type": "text",
+                                "label": null
+                            },
+                            {
+                                "name": "message",
+                                "type": "text",
+                                "label": null
+                            },
+                            {
+                                "name": "phone",
+                                "type": "text",
+                                "label": null
+                            },
+                            {
+                                "name": "contact_id",
+                                "type": "text",
+                                "label": null
+                            },
+                            {
+                                "name": "timestamp",
+                                "type": "date",
+                                "label": null
+                            },
+                            {
+                                "name": "processed",
+                                "type": "boolean",
+                                "label": null
+                            }
+                        ],
+                        "type": "collection",
+                        "label": "Record"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 33,
+            "module": "builtin:BasicAggregator",
+            "version": 1,
+            "parameters": {
+                "feeder": 14
+            },
+            "mapper": {},
+            "metadata": {
+                "designer": {
+                    "x": 2700,
+                    "y": 150
+                },
+                "restore": {
+                    "extra": {
+                        "feeder": {
+                            "label": "Iterator [14]"
+                        },
+                        "target": {
+                            "label": "Custom"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "id": 7,
+            "module": "builtin:BasicRouter",
+            "version": 1,
+            "mapper": null,
+            "metadata": {
+                "designer": {
+                    "x": 3000,
+                    "y": 150
+                }
+            },
+            "routes": [
+                {
+                    "flow": [
+                        {
+                            "id": 13,
+                            "module": "datastore:SearchRecord",
+                            "version": 1,
+                            "parameters": {
+                                "limit": 1,
+                                "datastore": 53799,
+                                "continueWhenNoRes": false
+                            },
+                            "mapper": {
+                                "sort": [],
+                                "filter": [
+                                    [
+                                        {
+                                            "a": "thread_id",
+                                            "b": "{{1.thread_id}}",
+                                            "o": "text:equal"
+                                        },
+                                        {
+                                            "a": "processed",
+                                            "b": "true",
+                                            "o": "boolean:equal"
+                                        }
+                                    ]
+                                ],
+                                "mappAbleLimit": "1"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 3300,
+                                    "y": 0
+                                },
+                                "restore": {
+                                    "parameters": {
+                                        "datastore": {
+                                            "label": "Buffer_Mensajes"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "datastore",
+                                        "type": "datastore",
+                                        "label": "Data store",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "continueWhenNoRes",
+                                        "type": "boolean",
+                                        "label": "Continue the execution of the route even if the module returns no results"
+                                    },
+                                    {
+                                        "name": "limit",
+                                        "type": "uinteger",
+                                        "label": "Limit"
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "filter",
+                                        "type": "filter",
+                                        "label": "Filter",
+                                        "options": "rpc://datastore/1.12.1/RpcGetUDTKeys",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "sort",
+                                        "spec": [
+                                            {
+                                                "name": "key",
+                                                "type": "select",
+                                                "label": "Key",
+                                                "dynamic": true,
+                                                "options": [],
+                                                "required": true
+                                            },
+                                            {
+                                                "name": "order",
+                                                "type": "select",
+                                                "label": "Order",
+                                                "options": [
+                                                    {
+                                                        "label": "Ascending",
+                                                        "value": 1
+                                                    },
+                                                    {
+                                                        "label": "Descending",
+                                                        "value": -1
+                                                    }
+                                                ],
+                                                "required": true
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Sort"
+                                    },
+                                    {
+                                        "name": "mappAbleLimit",
+                                        "type": "uinteger",
+                                        "label": "Mappable Limit"
+                                    }
+                                ],
+                                "interface": [
+                                    {
+                                        "name": "__IMTLENGTH__",
+                                        "type": "uinteger",
+                                        "label": "Total number of bundles"
+                                    },
+                                    {
+                                        "name": "__IMTINDEX__",
+                                        "type": "uinteger",
+                                        "label": "Bundle order position"
+                                    },
+                                    {
+                                        "name": "key",
+                                        "type": "text",
+                                        "label": "Key"
+                                    },
+                                    {
+                                        "name": "data",
+                                        "spec": [
+                                            {
+                                                "help": "Id del mensaje",
+                                                "name": "message_id",
+                                                "type": "text",
+                                                "label": null,
+                                                "default": null,
+                                                "required": true,
+                                                "multiline": false
+                                            },
+                                            {
+                                                "help": "Id del hilo del mensaje",
+                                                "name": "thread_id",
+                                                "type": "text",
+                                                "label": null,
+                                                "default": null,
+                                                "required": true,
+                                                "multiline": false
+                                            },
+                                            {
+                                                "help": "Cuerpo del mensaje",
+                                                "name": "message",
+                                                "type": "text",
+                                                "label": null,
+                                                "default": null,
+                                                "required": true,
+                                                "multiline": true
+                                            },
+                                            {
+                                                "help": "número telefónico del contacto",
+                                                "name": "phone",
+                                                "type": "text",
+                                                "label": null,
+                                                "default": null,
+                                                "required": true,
+                                                "multiline": false
+                                            },
+                                            {
+                                                "help": "Id del contacto",
+                                                "name": "contact_id",
+                                                "type": "text",
+                                                "label": null,
+                                                "default": null,
+                                                "required": true,
+                                                "multiline": false
+                                            },
+                                            {
+                                                "help": "Fecha de entrada del mensaje",
+                                                "name": "timestamp",
+                                                "type": "date",
+                                                "label": null,
+                                                "required": true
+                                            },
+                                            {
+                                                "help": "Si el mensaje ya se procesó",
+                                                "name": "processed",
+                                                "type": "boolean",
+                                                "label": null,
+                                                "required": true
+                                            }
+                                        ],
+                                        "type": "collection",
+                                        "label": "Record"
+                                    }
+                                ],
+                                "advanced": true
+                            }
+                        },
+                        {
+                            "id": 9,
+                            "module": "ai-agent:RunAnAIAgent",
+                            "version": 0,
+                            "parameters": {},
+                            "mapper": {
+                                "agent": "9961e638-300b-4b84-9366-5b36ba12305f",
+                                "timeout": "",
+                                "messages": [
+                                    "{{13.data.phone}}wid:{{13.data.contact_id}}:{{4.text}}"
+                                ],
+                                "threadID": "{{13.data.thread_id}}",
+                                "outputType": "",
+                                "additionalSystemPrompt": "No hagas referencia a los datos que tienes del prospecto como el phone o el wid, ya que son de backend y no es relevante para él, enfócate en educar y cumplir tu objetivo y el contenido del mensaje unicamente."
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 3600,
+                                    "y": 0
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "agent": {
+                                            "label": "Asistente de Sonrisa | White Dental"
+                                        },
+                                        "messages": {
+                                            "mode": "chose",
+                                            "items": [
+                                                null
+                                            ]
+                                        },
+                                        "outputType": {
+                                            "label": "Empty"
+                                        }
+                                    }
+                                },
+                                "expect": [
+                                    {
+                                        "name": "agent",
+                                        "type": "aiagent",
+                                        "label": "Agent",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "threadID",
+                                        "type": "text",
+                                        "label": "Thread ID",
+                                        "validate": {
+                                            "max": 256
+                                        }
+                                    },
+                                    {
+                                        "name": "additionalSystemPrompt",
+                                        "type": "text",
+                                        "label": "Additional system instructions"
+                                    },
+                                    {
+                                        "name": "messages",
+                                        "spec": {
+                                            "name": "value",
+                                            "type": "text",
+                                            "label": "Message"
+                                        },
+                                        "type": "array",
+                                        "label": "Messages"
+                                    },
+                                    {
+                                        "name": "timeout",
+                                        "type": "number",
+                                        "label": "Timeout",
+                                        "validate": {
+                                            "max": 600,
+                                            "min": 120
+                                        }
+                                    },
+                                    {
+                                        "name": "outputType",
+                                        "type": "select",
+                                        "label": "Output schema",
+                                        "validate": {
+                                            "enum": [
+                                                "text",
+                                                "make-schema"
+                                            ]
+                                        }
+                                    }
+                                ],
+                                "advanced": true
+                            }
+                        },
+                        {
+                            "id": 32,
+                            "module": "app#wassenger-0waevn:sendGroupMessage",
+                            "version": 1,
+                            "parameters": {
+                                "__IMTCONN__": 5974439
+                            },
+                            "mapper": {
+                                "type": "phone",
+                                "order": true,
+                                "phone": "{{13.data.phone}}",
+                                "device": "68fd1067b488de07029fccc2",
+                                "message": "{{9.response}}",
+                                "retries": "100",
+                                "schedule": {},
+                                "expiration": {},
+                                "previewUrl": true,
+                                "sendReadAck": false,
+                                "retentionPolicy": "plan_defaults"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 3900,
+                                    "y": 0
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "live": {
+                                            "mode": "chose"
+                                        },
+                                        "type": {
+                                            "mode": "chose",
+                                            "label": "Phone"
+                                        },
+                                        "agent": {
+                                            "mode": "chose"
+                                        },
+                                        "order": {
+                                            "mode": "chose"
+                                        },
+                                        "device": {
+                                            "mode": "chose",
+                                            "label": "White Dental (+5215645570796)"
+                                        },
+                                        "actions": {
+                                            "mode": "chose"
+                                        },
+                                        "enqueue": {
+                                            "mode": "chose",
+                                            "label": "Empty"
+                                        },
+                                        "previewUrl": {
+                                            "mode": "chose"
+                                        },
+                                        "sendReadAck": {
+                                            "mode": "chose"
+                                        },
+                                        "retentionPolicy": {
+                                            "mode": "chose",
+                                            "label": "plan_defaults"
+                                        }
+                                    },
+                                    "parameters": {
+                                        "__IMTCONN__": {
+                                            "data": {
+                                                "scoped": "true",
+                                                "connection": "app#wassenger-0waevn"
+                                            },
+                                            "label": "Wassenger White Dental"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "__IMTCONN__",
+                                        "type": "account:app#wassenger-0waevn",
+                                        "label": "Connection",
+                                        "required": true
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "type",
+                                        "type": "select",
+                                        "label": "Destination Type",
+                                        "validate": {
+                                            "enum": [
+                                                "groups",
+                                                "phone",
+                                                "channel"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "message",
+                                        "type": "text",
+                                        "label": "Message"
+                                    },
+                                    {
+                                        "name": "reference",
+                                        "type": "text",
+                                        "label": "Reference"
+                                    },
+                                    {
+                                        "name": "quote",
+                                        "type": "text",
+                                        "label": "Reply to Message ID"
+                                    },
+                                    {
+                                        "name": "deliverAt",
+                                        "type": "date",
+                                        "label": "Deliver At"
+                                    },
+                                    {
+                                        "name": "schedule",
+                                        "spec": [
+                                            {
+                                                "name": "delay",
+                                                "type": "number",
+                                                "label": "Delay"
+                                            },
+                                            {
+                                                "name": "delayTo",
+                                                "type": "text",
+                                                "label": "Delay To"
+                                            },
+                                            {
+                                                "name": "date",
+                                                "type": "date",
+                                                "label": "Date"
+                                            }
+                                        ],
+                                        "type": "collection",
+                                        "label": "Schedule"
+                                    },
+                                    {
+                                        "name": "expiration",
+                                        "spec": [
+                                            {
+                                                "name": "seconds",
+                                                "type": "number",
+                                                "label": "Seconds"
+                                            }
+                                        ],
+                                        "type": "collection",
+                                        "label": "Expiration"
+                                    },
+                                    {
+                                        "name": "device",
+                                        "type": "select",
+                                        "label": "From Device"
+                                    },
+                                    {
+                                        "name": "agent",
+                                        "type": "select",
+                                        "label": "From Agent"
+                                    },
+                                    {
+                                        "name": "live",
+                                        "type": "boolean"
+                                    },
+                                    {
+                                        "name": "enqueue",
+                                        "type": "select",
+                                        "label": "Enqueue",
+                                        "validate": {
+                                            "enum": [
+                                                "never",
+                                                "always",
+                                                "opportunistic"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "actions",
+                                        "spec": {
+                                            "name": "value",
+                                            "spec": [
+                                                {
+                                                    "name": "action",
+                                                    "type": "select",
+                                                    "label": "Action",
+                                                    "options": [
+                                                        {
+                                                            "label": "chat:assign",
+                                                            "value": "chat:assign",
+                                                            "nested": [
+                                                                {
+                                                                    "name": "params",
+                                                                    "spec": [
+                                                                        {
+                                                                            "name": "agent",
+                                                                            "type": "select",
+                                                                            "label": "Agent",
+                                                                            "options": "rpc://app%23wassenger-0waevn/1/searchTeamRPC",
+                                                                            "required": true
+                                                                        },
+                                                                        {
+                                                                            "name": "assigner",
+                                                                            "type": "select",
+                                                                            "label": "Assigner",
+                                                                            "options": "rpc://app%23wassenger-0waevn/1/searchTeamRPC"
+                                                                        }
+                                                                    ],
+                                                                    "type": "collection"
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "label": "chat:unassign",
+                                                            "value": "chat:unassign",
+                                                            "nested": [
+                                                                {
+                                                                    "name": "params",
+                                                                    "spec": [
+                                                                        {
+                                                                            "name": "assigner",
+                                                                            "type": "select",
+                                                                            "label": "Assigner",
+                                                                            "options": "rpc://app%23wassenger-0waevn/1/searchTeamRPC"
+                                                                        }
+                                                                    ],
+                                                                    "type": "collection"
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "label": "chat:resolve",
+                                                            "value": "chat:resolve"
+                                                        },
+                                                        {
+                                                            "label": "chat:unresolve",
+                                                            "value": "chat:unresolve"
+                                                        },
+                                                        {
+                                                            "label": "chat:read",
+                                                            "value": "chat:read"
+                                                        },
+                                                        {
+                                                            "label": "chat:unread",
+                                                            "value": "chat:unread"
+                                                        },
+                                                        {
+                                                            "label": "labels:add",
+                                                            "value": "labels:add",
+                                                            "nested": [
+                                                                {
+                                                                    "name": "params",
+                                                                    "spec": [
+                                                                        {
+                                                                            "name": "labels",
+                                                                            "type": "array",
+                                                                            "label": "Labels"
+                                                                        }
+                                                                    ],
+                                                                    "type": "collection"
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "label": "labels:remove",
+                                                            "value": "labels:remove",
+                                                            "nested": [
+                                                                {
+                                                                    "name": "params",
+                                                                    "spec": [
+                                                                        {
+                                                                            "name": "labels",
+                                                                            "type": "array",
+                                                                            "label": "Labels"
+                                                                        }
+                                                                    ],
+                                                                    "type": "collection"
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "label": "labels:set",
+                                                            "value": "labels:set",
+                                                            "nested": [
+                                                                {
+                                                                    "name": "labels",
+                                                                    "type": "array",
+                                                                    "label": "Labels"
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "label": "metadata:set",
+                                                            "value": "metadata:set",
+                                                            "nested": [
+                                                                {
+                                                                    "name": "params",
+                                                                    "spec": [
+                                                                        {
+                                                                            "name": "metadata",
+                                                                            "type": "array",
+                                                                            "label": "Metadatas"
+                                                                        }
+                                                                    ],
+                                                                    "type": "collection"
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "label": "metadata:add",
+                                                            "value": "metadata:add",
+                                                            "nested": [
+                                                                {
+                                                                    "name": "params",
+                                                                    "spec": [
+                                                                        {
+                                                                            "name": "metadata",
+                                                                            "type": "array",
+                                                                            "label": "Metadatas"
+                                                                        }
+                                                                    ],
+                                                                    "type": "collection"
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "label": "metadata:remove",
+                                                            "value": "metadata:remove",
+                                                            "nested": [
+                                                                {
+                                                                    "name": "params",
+                                                                    "spec": [
+                                                                        {
+                                                                            "name": "metadata",
+                                                                            "type": "array",
+                                                                            "label": "Metadatas"
+                                                                        }
+                                                                    ],
+                                                                    "type": "collection"
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ],
+                                            "type": "collection"
+                                        },
+                                        "type": "array",
+                                        "label": "Actions"
+                                    },
+                                    {
+                                        "name": "previewUrl",
+                                        "type": "boolean",
+                                        "label": "Preview URL"
+                                    },
+                                    {
+                                        "name": "order",
+                                        "type": "boolean",
+                                        "label": "Order"
+                                    },
+                                    {
+                                        "name": "sendReadAck",
+                                        "type": "boolean",
+                                        "label": "Send Read Acknowledgement"
+                                    },
+                                    {
+                                        "name": "retries",
+                                        "type": "integer",
+                                        "label": "Retries"
+                                    },
+                                    {
+                                        "name": "retryWait",
+                                        "type": "number",
+                                        "label": "Retry Wait"
+                                    },
+                                    {
+                                        "name": "retentionPolicy",
+                                        "type": "select",
+                                        "label": "Retention Policy",
+                                        "validate": {
+                                            "enum": [
+                                                "plan_defaults",
+                                                "never",
+                                                "5m",
+                                                "15m",
+                                                "30m",
+                                                "1h",
+                                                "12h",
+                                                "24h",
+                                                "2d",
+                                                "3d",
+                                                "4d",
+                                                "5d",
+                                                "6d",
+                                                "7d",
+                                                "10d"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "phone",
+                                        "type": "text",
+                                        "label": "Phone number",
+                                        "required": true
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "flow": [
+                        {
+                            "id": 29,
+                            "module": "datastore:SearchRecord",
+                            "version": 1,
+                            "parameters": {
+                                "limit": 1,
+                                "datastore": 53799,
+                                "continueWhenNoRes": false
+                            },
+                            "filter": {
+                                "name": "Agregar evento contacto",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{contains(1.labels.labels; \"contacto\")}}",
+                                            "b": "false",
+                                            "o": "boolean:equal"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "sort": [],
+                                "filter": [
+                                    [
+                                        {
+                                            "a": "thread_id",
+                                            "b": "{{1.thread_id}}",
+                                            "o": "text:equal"
+                                        }
+                                    ]
+                                ],
+                                "mappAbleLimit": ""
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 3300,
+                                    "y": 300
+                                },
+                                "restore": {
+                                    "parameters": {
+                                        "datastore": {
+                                            "label": "Buffer_Mensajes"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "datastore",
+                                        "type": "datastore",
+                                        "label": "Data store",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "continueWhenNoRes",
+                                        "type": "boolean",
+                                        "label": "Continue the execution of the route even if the module returns no results"
+                                    },
+                                    {
+                                        "name": "limit",
+                                        "type": "uinteger",
+                                        "label": "Limit"
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "filter",
+                                        "type": "filter",
+                                        "label": "Filter",
+                                        "options": "rpc://datastore/1.12.1/RpcGetUDTKeys",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "sort",
+                                        "spec": [
+                                            {
+                                                "name": "key",
+                                                "type": "select",
+                                                "label": "Key",
+                                                "dynamic": true,
+                                                "options": [],
+                                                "required": true
+                                            },
+                                            {
+                                                "name": "order",
+                                                "type": "select",
+                                                "label": "Order",
+                                                "options": [
+                                                    {
+                                                        "label": "Ascending",
+                                                        "value": 1
+                                                    },
+                                                    {
+                                                        "label": "Descending",
+                                                        "value": -1
+                                                    }
+                                                ],
+                                                "required": true
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Sort"
+                                    },
+                                    {
+                                        "name": "mappAbleLimit",
+                                        "type": "uinteger",
+                                        "label": "Mappable Limit"
+                                    }
+                                ],
+                                "interface": [
+                                    {
+                                        "name": "__IMTLENGTH__",
+                                        "type": "uinteger",
+                                        "label": "Total number of bundles"
+                                    },
+                                    {
+                                        "name": "__IMTINDEX__",
+                                        "type": "uinteger",
+                                        "label": "Bundle order position"
+                                    },
+                                    {
+                                        "name": "key",
+                                        "type": "text",
+                                        "label": "Key"
+                                    },
+                                    {
+                                        "name": "data",
+                                        "spec": [
+                                            {
+                                                "help": "Id del mensaje",
+                                                "name": "message_id",
+                                                "type": "text",
+                                                "label": null,
+                                                "default": null,
+                                                "required": true,
+                                                "multiline": false
+                                            },
+                                            {
+                                                "help": "Id del hilo del mensaje",
+                                                "name": "thread_id",
+                                                "type": "text",
+                                                "label": null,
+                                                "default": null,
+                                                "required": true,
+                                                "multiline": false
+                                            },
+                                            {
+                                                "help": "Cuerpo del mensaje",
+                                                "name": "message",
+                                                "type": "text",
+                                                "label": null,
+                                                "default": null,
+                                                "required": true,
+                                                "multiline": true
+                                            },
+                                            {
+                                                "help": "número telefónico del contacto",
+                                                "name": "phone",
+                                                "type": "text",
+                                                "label": null,
+                                                "default": null,
+                                                "required": true,
+                                                "multiline": false
+                                            },
+                                            {
+                                                "help": "Id del contacto",
+                                                "name": "contact_id",
+                                                "type": "text",
+                                                "label": null,
+                                                "default": null,
+                                                "required": true,
+                                                "multiline": false
+                                            },
+                                            {
+                                                "help": "Fecha de entrada del mensaje",
+                                                "name": "timestamp",
+                                                "type": "date",
+                                                "label": null,
+                                                "required": true
+                                            },
+                                            {
+                                                "help": "Si el mensaje ya se procesó",
+                                                "name": "processed",
+                                                "type": "boolean",
+                                                "label": null,
+                                                "required": true
+                                            }
+                                        ],
+                                        "type": "collection",
+                                        "label": "Record"
+                                    }
+                                ],
+                                "advanced": true
+                            }
+                        },
+                        {
+                            "id": 28,
+                            "module": "app#wassenger-0waevn:makeAnAPICall",
+                            "version": 1,
+                            "parameters": {
+                                "__IMTCONN__": 5974439
+                            },
+                            "mapper": {
+                                "url": "/chat/68fd1067b488de07029fccc2/chats/{{29.data.phone}}@c.us/labels",
+                                "body": "[\"contacto\"]",
+                                "method": "PATCH",
+                                "headers": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "key": "token",
+                                        "value": "0d747b11e1485df982f94e000f63848cade17f74f3a9f2233251b91d06b8c920dc4cd0c460eba697"
+                                    }
+                                ]
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 3600,
+                                    "y": 300
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "qs": {
+                                            "mode": "chose"
+                                        },
+                                        "method": {
+                                            "mode": "chose",
+                                            "label": "PATCH"
+                                        },
+                                        "headers": {
+                                            "mode": "chose",
+                                            "items": [
+                                                null,
+                                                null
+                                            ]
+                                        }
+                                    },
+                                    "parameters": {
+                                        "__IMTCONN__": {
+                                            "data": {
+                                                "scoped": "true",
+                                                "connection": "app#wassenger-0waevn"
+                                            },
+                                            "label": "Wassenger White Dental"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "__IMTCONN__",
+                                        "type": "account:app#wassenger-0waevn",
+                                        "label": "Connection",
+                                        "required": true
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "url",
+                                        "type": "text",
+                                        "label": "Endpoint",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "method",
+                                        "type": "select",
+                                        "label": "Method",
+                                        "required": true,
+                                        "validate": {
+                                            "enum": [
+                                                "GET",
+                                                "POST",
+                                                "PUT",
+                                                "PATCH",
+                                                "DELETE"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "headers",
+                                        "spec": [
+                                            {
+                                                "name": "key",
+                                                "type": "text",
+                                                "label": "Key"
+                                            },
+                                            {
+                                                "name": "value",
+                                                "type": "text",
+                                                "label": "Value"
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Headers"
+                                    },
+                                    {
+                                        "name": "qs",
+                                        "spec": [
+                                            {
+                                                "name": "key",
+                                                "type": "text",
+                                                "label": "Key"
+                                            },
+                                            {
+                                                "name": "value",
+                                                "type": "text",
+                                                "label": "Value"
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Query String"
+                                    },
+                                    {
+                                        "name": "body",
+                                        "type": "any",
+                                        "label": "Body"
+                                    },
+                                    {
+                                        "name": "url",
+                                        "type": "text",
+                                        "label": "Endpoint",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "method",
+                                        "type": "select",
+                                        "label": "Method",
+                                        "required": true,
+                                        "validate": {
+                                            "enum": [
+                                                "GET",
+                                                "POST",
+                                                "PUT",
+                                                "PATCH",
+                                                "DELETE"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "headers",
+                                        "spec": [
+                                            {
+                                                "name": "key",
+                                                "type": "text",
+                                                "label": "Key"
+                                            },
+                                            {
+                                                "name": "value",
+                                                "type": "text",
+                                                "label": "Value"
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Headers"
+                                    },
+                                    {
+                                        "name": "qs",
+                                        "spec": [
+                                            {
+                                                "name": "key",
+                                                "type": "text",
+                                                "label": "Key"
+                                            },
+                                            {
+                                                "name": "value",
+                                                "type": "text",
+                                                "label": "Value"
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Query String"
+                                    },
+                                    {
+                                        "name": "body",
+                                        "type": "any",
+                                        "label": "Body"
+                                    }
+                                ]
+                            },
+                            "onerror": [
+                                {
+                                    "id": 36,
+                                    "module": "builtin:Ignore",
+                                    "version": 1,
+                                    "metadata": {
+                                        "designer": {
+                                            "x": 3900,
+                                            "y": 300
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "metadata": {
+        "instant": true,
+        "version": 1,
+        "scenario": {
+            "roundtrips": 1,
+            "maxErrors": 3,
+            "autoCommit": true,
+            "autoCommitTriggerLast": true,
+            "sequential": false,
+            "slots": null,
+            "confidential": false,
+            "dataloss": false,
+            "dlq": false,
+            "freshVariables": false
+        },
+        "designer": {
+            "orphans": []
+        },
+        "zone": "us2.make.com",
+        "notes": []
+    }
+}

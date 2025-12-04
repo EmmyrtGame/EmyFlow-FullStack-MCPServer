@@ -1,0 +1,1280 @@
+{
+    "name": "Verificar Disponibilidad Google Calendar 2.0 | White Dental",
+    "flow": [
+        {
+            "id": 1,
+            "module": "scenario-service:StartSubscenario",
+            "version": 2,
+            "parameters": {},
+            "mapper": {},
+            "metadata": {
+                "designer": {
+                    "x": 0,
+                    "y": 150
+                },
+                "restore": {},
+                "interface": [
+                    {
+                        "help": "Fecha y hora de inicio del rango de la cita (preferiblemente con margen para alternativas de hora), formato DD.MM.YYYY HH:mm (CST zona horaria)",
+                        "name": "start_time",
+                        "type": "text",
+                        "label": "",
+                        "default": "",
+                        "required": true,
+                        "multiline": false
+                    },
+                    {
+                        "help": "Fecha y hora de fin del rango de la cita (preferiblemente con margen para alternativas de hora), formato DD.MM.YYYY HH:mm (CST zona horaria)",
+                        "name": "fecha_fin",
+                        "type": "text",
+                        "label": "",
+                        "default": "",
+                        "required": true,
+                        "multiline": false
+                    },
+                    {
+                        "help": "El numero telefónico del prospecto",
+                        "name": "telefono_prospecto",
+                        "type": "text",
+                        "label": "",
+                        "default": "",
+                        "required": true,
+                        "multiline": false
+                    },
+                    {
+                        "help": "Email del prospecto si se conoce",
+                        "name": "email",
+                        "type": "text",
+                        "label": "",
+                        "default": "",
+                        "required": false,
+                        "multiline": false
+                    },
+                    {
+                        "help": "Nombre/nombres del prospecto",
+                        "name": "first_name",
+                        "type": "text",
+                        "label": "",
+                        "default": "",
+                        "required": false,
+                        "multiline": false
+                    },
+                    {
+                        "help": "Apellido/apellidos del prospecto",
+                        "name": "last_name",
+                        "type": "text",
+                        "label": "",
+                        "default": "",
+                        "required": false,
+                        "multiline": false
+                    },
+                    {
+                        "help": "Lead ID de meta (en caso de venir de lead campaign)",
+                        "name": "lead_id",
+                        "type": "number",
+                        "label": "",
+                        "default": null,
+                        "required": false
+                    },
+                    {
+                        "help": "WID correspondiente al contacto de wassenger, incluir si está disponible.",
+                        "name": "wassenger_contact_wid",
+                        "type": "text",
+                        "label": "",
+                        "default": "",
+                        "required": false,
+                        "multiline": false
+                    }
+                ]
+            }
+        },
+        {
+            "id": 7,
+            "module": "util:SetVariables",
+            "version": 1,
+            "parameters": {},
+            "mapper": {
+                "scope": "roundtrip",
+                "variables": [
+                    {
+                        "name": "minTime",
+                        "value": "{{formatDate(parseDate(1.start_time; \"DD.MM.YYYY HH:mm\"; \"America/Mexico_City\"); \"YYYY-MM-DDTHH:mm:ssZZ\"; \"America/Mexico_City\")}}"
+                    },
+                    {
+                        "name": "maxTime",
+                        "value": "{{formatDate(parseDate(1.fecha_fin; \"DD.MM.YYYY HH:mm\"; \"America/Mexico_City\"); \"YYYY-MM-DDTHH:mm:ssZZ\"; \"America/Mexico_City\")}}"
+                    },
+                    {
+                        "name": "minTimeDia",
+                        "value": "{{formatDate(parseDate(formatDate(parseDate(1.start_time; \"DD.MM.YYYY HH:mm\"; \"America/Mexico_City\"); \"YYYY-MM-DD\"; \"America/Mexico_City\") + \"T10:00:00\"; \"YYYY-MM-DDTHH:mm:ss\"; \"America/Mexico_City\"); \"YYYY-MM-DDTHH:mm:ssZZ\"; \"America/Mexico_City\")}}"
+                    },
+                    {
+                        "name": "maxTimeDia",
+                        "value": "{{formatDate(parseDate(formatDate(parseDate(1.start_time; \"DD.MM.YYYY HH:mm\"; \"America/Mexico_City\"); \"YYYY-MM-DD\"; \"America/Mexico_City\") + \"T18:00:00\"; \"YYYY-MM-DDTHH:mm:ss\"; \"America/Mexico_City\"); \"YYYY-MM-DDTHH:mm:ssZZ\"; \"America/Mexico_City\")}}"
+                    }
+                ]
+            },
+            "metadata": {
+                "designer": {
+                    "x": 300,
+                    "y": 150
+                },
+                "restore": {
+                    "expect": {
+                        "scope": {
+                            "label": "One cycle"
+                        },
+                        "variables": {
+                            "items": [
+                                null,
+                                null,
+                                null,
+                                null
+                            ]
+                        }
+                    }
+                },
+                "expect": [
+                    {
+                        "name": "variables",
+                        "spec": [
+                            {
+                                "name": "name",
+                                "type": "text",
+                                "label": "Variable name",
+                                "required": true
+                            },
+                            {
+                                "name": "value",
+                                "type": "any",
+                                "label": "Variable value"
+                            }
+                        ],
+                        "type": "array",
+                        "label": "Variables"
+                    },
+                    {
+                        "name": "scope",
+                        "type": "select",
+                        "label": "Variable lifetime",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "roundtrip",
+                                "execution"
+                            ]
+                        }
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "minTime",
+                        "type": "any",
+                        "label": "minTime"
+                    },
+                    {
+                        "name": "maxTime",
+                        "type": "any",
+                        "label": "maxTime"
+                    },
+                    {
+                        "name": "minTimeDia",
+                        "type": "any",
+                        "label": "minTimeDia"
+                    },
+                    {
+                        "name": "maxTimeDia",
+                        "type": "any",
+                        "label": "maxTimeDia"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 5,
+            "module": "google-calendar:searchEvents",
+            "version": 5,
+            "parameters": {
+                "__IMTCONN__": 5638119
+            },
+            "mapper": {
+                "limit": "10",
+                "orderBy": "startTime",
+                "timeMax": "{{7.maxTimeDia}}",
+                "timeMin": "{{7.minTimeDia}}",
+                "calendar": "whitedental262@gmail.com",
+                "eventTypes": [
+                    "default",
+                    "fromGmail",
+                    "focusTime",
+                    "outOfOffice",
+                    "workingLocation"
+                ],
+                "singleEvents": true
+            },
+            "metadata": {
+                "designer": {
+                    "x": 600,
+                    "y": 150
+                },
+                "restore": {
+                    "expect": {
+                        "orderBy": {
+                            "mode": "chose",
+                            "label": "Start Time (ascending)"
+                        },
+                        "calendar": {
+                            "mode": "chose",
+                            "label": "whitedental262@gmail.com"
+                        },
+                        "eventTypes": {
+                            "mode": "chose"
+                        }
+                    },
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "data": {
+                                "scoped": "true",
+                                "connection": "google"
+                            },
+                            "label": "Mi conexión de google calendar (emmmyrtgame@gmail.com)"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTCONN__",
+                        "type": "account:google",
+                        "label": "Connection",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "calendar",
+                        "type": "select",
+                        "label": "Calendar ID",
+                        "required": true
+                    },
+                    {
+                        "name": "timeMin",
+                        "time": true,
+                        "type": "date",
+                        "label": "Start Date"
+                    },
+                    {
+                        "name": "timeMax",
+                        "time": true,
+                        "type": "date",
+                        "label": "End Date"
+                    },
+                    {
+                        "name": "updatedMin",
+                        "time": true,
+                        "type": "date",
+                        "label": "Updated from"
+                    },
+                    {
+                        "name": "singleEvents",
+                        "type": "boolean",
+                        "label": "Single Events",
+                        "required": true
+                    },
+                    {
+                        "name": "q",
+                        "type": "text",
+                        "label": "Query"
+                    },
+                    {
+                        "name": "eventTypes",
+                        "type": "select",
+                        "label": "Event Types",
+                        "multiple": true,
+                        "validate": {
+                            "enum": [
+                                "default",
+                                "fromGmail",
+                                "focusTime",
+                                "outOfOffice",
+                                "workingLocation"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "orderBy",
+                        "type": "select",
+                        "label": "Order By",
+                        "validate": {
+                            "enum": [
+                                "startTime",
+                                "updated"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "type": "uinteger",
+                        "label": "Limit"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 9,
+            "module": "builtin:BasicAggregator",
+            "version": 1,
+            "parameters": {
+                "feeder": 5
+            },
+            "mapper": {
+                "id": "{{5.id}}",
+                "end": "{{5.end}}",
+                "start": "{{5.start}}",
+                "status": "{{5.status}}",
+                "summary": "{{5.summary}}"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 900,
+                    "y": 150
+                },
+                "restore": {
+                    "extra": {
+                        "feeder": {
+                            "label": "Google Calendar - Search Events [5]"
+                        },
+                        "target": {
+                            "label": "Custom"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "id": 15,
+            "module": "builtin:BasicFeeder",
+            "version": 1,
+            "parameters": {},
+            "mapper": {
+                "array": "{{9.array}}"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 1200,
+                    "y": 150
+                },
+                "restore": {
+                    "expect": {
+                        "array": {
+                            "mode": "edit"
+                        }
+                    }
+                },
+                "expect": [
+                    {
+                        "mode": "edit",
+                        "name": "array",
+                        "spec": [],
+                        "type": "array",
+                        "label": "Array"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 17,
+            "module": "builtin:BasicAggregator",
+            "version": 1,
+            "parameters": {
+                "feeder": 15
+            },
+            "filter": {
+                "name": "Detectar solapamiento real",
+                "conditions": [
+                    [
+                        {
+                            "a": "{{formatDate(parseDate(15.start; \"DD.MM.YYYY HH:mm\"; \"America/Mexico_City\"); \"YYYY-MM-DDTHH:mm:ssZZ\"; \"America/Mexico_City\")}}",
+                            "b": "{{7.maxTime}}",
+                            "o": "date:less"
+                        },
+                        {
+                            "a": "{{formatDate(parseDate(15.end; \"DD.MM.YYYY HH:mm\"; \"America/Mexico_City\"); \"YYYY-MM-DDTHH:mm:ssZZ\"; \"America/Mexico_City\")}}",
+                            "b": "{{7.minTime}}",
+                            "o": "date:greater"
+                        }
+                    ]
+                ]
+            },
+            "mapper": {
+                "id": "{{15.id}}",
+                "end": "{{15.end}}",
+                "start": "{{15.start}}",
+                "status": "{{15.status}}",
+                "summary": "{{15.summary}}"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 1500,
+                    "y": 150
+                },
+                "restore": {
+                    "extra": {
+                        "feeder": {
+                            "label": "Iterator [15]"
+                        },
+                        "target": {
+                            "label": "Custom"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "id": 12,
+            "module": "builtin:BasicRouter",
+            "version": 1,
+            "mapper": null,
+            "metadata": {
+                "designer": {
+                    "x": 1800,
+                    "y": 150
+                }
+            },
+            "routes": [
+                {
+                    "flow": [
+                        {
+                            "id": 13,
+                            "module": "facebook-conversions-api:SendEvent",
+                            "version": 2,
+                            "parameters": {
+                                "__IMTCONN__": 5974820
+                            },
+                            "mapper": {
+                                "data": [
+                                    {
+                                        "event_id": "{{lower(1.first_name)}}_{{lower(1.last_name)}}_{{formatDate(now; \"YYYY-MM-DD\")}}_scheduleintent",
+                                        "user_data": {
+                                            "ct": "Tecámac",
+                                            "em": "{{1.email}}",
+                                            "fn": "{{1.first_name}}",
+                                            "ln": "{{1.last_name}}",
+                                            "ph": "{{1.telefono_prospecto}}",
+                                            "st": "mx",
+                                            "country": "mx",
+                                            "lead_id": "{{1.lead_id}}",
+                                            "external_id": "{{1.wassenger_contact_wid}}"
+                                        },
+                                        "event_name": "ScheduleIntent",
+                                        "event_time": "{{timestamp}}",
+                                        "action_source": "chat"
+                                    }
+                                ]
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 2100,
+                                    "y": 0
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "ldu": {
+                                            "mode": "chose"
+                                        },
+                                        "data": {
+                                            "mode": "chose",
+                                            "items": [
+                                                {
+                                                    "opt_out": {
+                                                        "mode": "chose"
+                                                    },
+                                                    "event_name": {
+                                                        "mode": "edit"
+                                                    },
+                                                    "custom_data": {
+                                                        "mode": "chose"
+                                                    },
+                                                    "action_source": {
+                                                        "mode": "chose",
+                                                        "label": "Chat"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "parameters": {
+                                        "__IMTCONN__": {
+                                            "data": {
+                                                "scoped": "true",
+                                                "connection": "facebook-business-extension"
+                                            },
+                                            "label": "White Dental CAPI (Make System User (::white_dental_123))"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "__IMTCONN__",
+                                        "type": "account:facebook-business-extension",
+                                        "label": "Connection",
+                                        "required": true
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "data",
+                                        "spec": [
+                                            {
+                                                "name": "event_id",
+                                                "type": "text",
+                                                "label": "Event ID"
+                                            },
+                                            {
+                                                "name": "event_name",
+                                                "type": "select",
+                                                "label": "Event Name",
+                                                "options": [
+                                                    {
+                                                        "label": "Add Payment Info",
+                                                        "value": "AddPaymentInfo"
+                                                    },
+                                                    {
+                                                        "label": "Add To Cart",
+                                                        "value": "AddToCart"
+                                                    },
+                                                    {
+                                                        "label": "Add To Wishlist",
+                                                        "value": "AddToWishlist"
+                                                    },
+                                                    {
+                                                        "label": "Complete Registration",
+                                                        "value": "CompleteRegistration"
+                                                    },
+                                                    {
+                                                        "label": "Contact",
+                                                        "value": "Contact"
+                                                    },
+                                                    {
+                                                        "label": "Customize Product",
+                                                        "value": "CustomizeProduct"
+                                                    },
+                                                    {
+                                                        "label": "Donate",
+                                                        "value": "Donate"
+                                                    },
+                                                    {
+                                                        "label": "FindLocation",
+                                                        "value": "FindLocation"
+                                                    },
+                                                    {
+                                                        "label": "Initiate Checkout",
+                                                        "value": "InitiateCheckout"
+                                                    },
+                                                    {
+                                                        "label": "Lead",
+                                                        "value": "Lead"
+                                                    },
+                                                    {
+                                                        "label": "Page View",
+                                                        "value": "PageView"
+                                                    },
+                                                    {
+                                                        "label": "Purchase",
+                                                        "value": "Purchase",
+                                                        "nested": [
+                                                            {
+                                                                "help": "Currency must be a valid [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) three digit currency code. Example: `USD`.",
+                                                                "name": "custom_data_currency",
+                                                                "type": "text",
+                                                                "label": "Currency",
+                                                                "required": true
+                                                            },
+                                                            {
+                                                                "help": "This could be a monetary value or a value in some other metric. Example: `142.54`.",
+                                                                "name": "custom_data_value",
+                                                                "type": "number",
+                                                                "label": "Value",
+                                                                "required": true
+                                                            },
+                                                            {
+                                                                "name": "custom_data_order_id",
+                                                                "type": "text",
+                                                                "label": "Order ID",
+                                                                "required": true
+                                                            }
+                                                        ]
+                                                    },
+                                                    {
+                                                        "label": "Other",
+                                                        "value": "Other"
+                                                    },
+                                                    {
+                                                        "label": "Schedule",
+                                                        "value": "Schedule"
+                                                    },
+                                                    {
+                                                        "label": "Search",
+                                                        "value": "Search"
+                                                    },
+                                                    {
+                                                        "label": "Start Trial",
+                                                        "value": "StartTrial"
+                                                    },
+                                                    {
+                                                        "label": "Submit Application",
+                                                        "value": "SubmitApplication"
+                                                    },
+                                                    {
+                                                        "label": "Subscribe",
+                                                        "value": "Subscribe"
+                                                    },
+                                                    {
+                                                        "label": "View Content",
+                                                        "value": "ViewContent"
+                                                    }
+                                                ],
+                                                "required": true,
+                                                "validate": false
+                                            },
+                                            {
+                                                "name": "event_time",
+                                                "type": "date",
+                                                "label": "Event Time",
+                                                "required": true
+                                            },
+                                            {
+                                                "name": "action_source",
+                                                "type": "select",
+                                                "label": "Action Source",
+                                                "options": [
+                                                    {
+                                                        "label": "Email",
+                                                        "value": "email"
+                                                    },
+                                                    {
+                                                        "label": "Website",
+                                                        "value": "website"
+                                                    },
+                                                    {
+                                                        "label": "App",
+                                                        "value": "app"
+                                                    },
+                                                    {
+                                                        "label": "Phone call",
+                                                        "value": "phone_call"
+                                                    },
+                                                    {
+                                                        "label": "Chat",
+                                                        "value": "chat"
+                                                    },
+                                                    {
+                                                        "label": "Physical store",
+                                                        "value": "physical_store"
+                                                    },
+                                                    {
+                                                        "label": "System generated",
+                                                        "value": "system_generated"
+                                                    },
+                                                    {
+                                                        "label": "Other",
+                                                        "value": "other"
+                                                    }
+                                                ],
+                                                "required": true
+                                            },
+                                            {
+                                                "type": "html",
+                                                "label": "<div class=\"i-exception\"><div class=\"i-exception-description\"><h5>Reminder:</h5><p class=\"text-muted\">You do not have to hash the following inputs with `sha256()`. We will do that for you.</p></div></div>"
+                                            },
+                                            {
+                                                "name": "user_data",
+                                                "spec": [
+                                                    {
+                                                        "name": "em",
+                                                        "type": "text",
+                                                        "label": "Email"
+                                                    },
+                                                    {
+                                                        "name": "ph",
+                                                        "type": "text",
+                                                        "label": "Phone"
+                                                    },
+                                                    {
+                                                        "name": "ge",
+                                                        "type": "text",
+                                                        "label": "Gender"
+                                                    },
+                                                    {
+                                                        "name": "db",
+                                                        "type": "date",
+                                                        "label": "Day of Birth"
+                                                    },
+                                                    {
+                                                        "name": "ln",
+                                                        "type": "text",
+                                                        "label": "Last name"
+                                                    },
+                                                    {
+                                                        "name": "fn",
+                                                        "type": "text",
+                                                        "label": "First name"
+                                                    },
+                                                    {
+                                                        "name": "ct",
+                                                        "type": "text",
+                                                        "label": "City"
+                                                    },
+                                                    {
+                                                        "name": "st",
+                                                        "type": "text",
+                                                        "label": "State"
+                                                    },
+                                                    {
+                                                        "name": "zp",
+                                                        "type": "text",
+                                                        "label": "Zip"
+                                                    },
+                                                    {
+                                                        "name": "country",
+                                                        "type": "text",
+                                                        "label": "Country"
+                                                    },
+                                                    {
+                                                        "name": "external_id",
+                                                        "type": "text",
+                                                        "label": "External ID"
+                                                    },
+                                                    {
+                                                        "name": "client_ip_address",
+                                                        "type": "text",
+                                                        "label": "Client IP Address"
+                                                    },
+                                                    {
+                                                        "name": "client_user_agent",
+                                                        "type": "text",
+                                                        "label": "Client User Agent"
+                                                    },
+                                                    {
+                                                        "name": "fbc",
+                                                        "type": "text",
+                                                        "label": "Click ID"
+                                                    },
+                                                    {
+                                                        "name": "fbp",
+                                                        "type": "text",
+                                                        "label": "Browser ID"
+                                                    },
+                                                    {
+                                                        "name": "subscription_id",
+                                                        "type": "text",
+                                                        "label": "Subscription ID"
+                                                    },
+                                                    {
+                                                        "name": "lead_id",
+                                                        "type": "text",
+                                                        "label": "Lead ID"
+                                                    },
+                                                    {
+                                                        "name": "fb_login_id",
+                                                        "type": "text",
+                                                        "label": "Facebook Login ID"
+                                                    }
+                                                ],
+                                                "type": "collection",
+                                                "label": "User Data",
+                                                "required": true
+                                            },
+                                            {
+                                                "name": "custom_data",
+                                                "spec": [
+                                                    {
+                                                        "name": "name",
+                                                        "type": "text",
+                                                        "label": "Name",
+                                                        "required": true
+                                                    },
+                                                    {
+                                                        "name": "value",
+                                                        "type": "any",
+                                                        "label": "Value",
+                                                        "required": true
+                                                    }
+                                                ],
+                                                "type": "array",
+                                                "label": "Custom Data"
+                                            },
+                                            {
+                                                "name": "opt_out",
+                                                "type": "boolean",
+                                                "label": "Opt Out"
+                                            },
+                                            {
+                                                "name": "event_source_url",
+                                                "type": "text",
+                                                "label": "Event Source URL"
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Data",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "pixelId",
+                                        "type": "text",
+                                        "label": "Pixel ID"
+                                    },
+                                    {
+                                        "name": "test_event_code",
+                                        "type": "text",
+                                        "label": "Test Event Code"
+                                    },
+                                    {
+                                        "name": "ldu",
+                                        "type": "boolean",
+                                        "label": "Enable Limited Data Use"
+                                    }
+                                ],
+                                "advanced": true
+                            }
+                        }
+                    ]
+                },
+                {
+                    "flow": [
+                        {
+                            "id": 19,
+                            "module": "builtin:BasicFeeder",
+                            "version": 1,
+                            "parameters": {},
+                            "mapper": {
+                                "array": "{{9.array}}"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 2100,
+                                    "y": 300
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "array": {
+                                            "mode": "edit"
+                                        }
+                                    }
+                                },
+                                "expect": [
+                                    {
+                                        "mode": "edit",
+                                        "name": "array",
+                                        "spec": [],
+                                        "type": "array",
+                                        "label": "Array"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "id": 21,
+                            "module": "util:SetVariables",
+                            "version": 1,
+                            "parameters": {},
+                            "mapper": {
+                                "scope": "roundtrip",
+                                "variables": [
+                                    {
+                                        "name": "start_local",
+                                        "value": "{{formatDate(parseDate(19.start; \"YYYY-MM-DDTHH:mm:ssZ\"); \"YYYY-MM-DD HH:mm:ss\"; \"America/Mexico_City\")}}"
+                                    },
+                                    {
+                                        "name": "end_local",
+                                        "value": "{{formatDate(parseDate(19.end; \"YYYY-MM-DDTHH:mm:ssZ\"); \"YYYY-MM-DD HH:mm:ss\"; \"America/Mexico_City\")}}"
+                                    }
+                                ]
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 2400,
+                                    "y": 300
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "scope": {
+                                            "label": "One cycle"
+                                        },
+                                        "variables": {
+                                            "items": [
+                                                null,
+                                                null
+                                            ]
+                                        }
+                                    }
+                                },
+                                "expect": [
+                                    {
+                                        "name": "variables",
+                                        "spec": [
+                                            {
+                                                "name": "name",
+                                                "type": "text",
+                                                "label": "Variable name",
+                                                "required": true
+                                            },
+                                            {
+                                                "name": "value",
+                                                "type": "any",
+                                                "label": "Variable value"
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Variables"
+                                    },
+                                    {
+                                        "name": "scope",
+                                        "type": "select",
+                                        "label": "Variable lifetime",
+                                        "required": true,
+                                        "validate": {
+                                            "enum": [
+                                                "roundtrip",
+                                                "execution"
+                                            ]
+                                        }
+                                    }
+                                ],
+                                "interface": [
+                                    {
+                                        "name": "start_local",
+                                        "type": "any",
+                                        "label": "start_local"
+                                    },
+                                    {
+                                        "name": "end_local",
+                                        "type": "any",
+                                        "label": "end_local"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "id": 20,
+                            "module": "builtin:BasicAggregator",
+                            "version": 1,
+                            "parameters": {
+                                "feeder": 19
+                            },
+                            "mapper": {
+                                "status": "{{19.status}}",
+                                "summary": "{{19.summary}}",
+                                "end_local": "{{21.end_local}}",
+                                "start_local": "{{21.start_local}}"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 2700,
+                                    "y": 300
+                                },
+                                "restore": {
+                                    "extra": {
+                                        "feeder": {
+                                            "label": "Iterator [19]"
+                                        },
+                                        "target": {
+                                            "label": "Custom"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "id": 22,
+                            "module": "builtin:BasicFeeder",
+                            "version": 1,
+                            "parameters": {},
+                            "mapper": {
+                                "array": "{{17.array}}"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 3000,
+                                    "y": 300
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "array": {
+                                            "mode": "edit"
+                                        }
+                                    }
+                                },
+                                "expect": [
+                                    {
+                                        "mode": "edit",
+                                        "name": "array",
+                                        "spec": [],
+                                        "type": "array",
+                                        "label": "Array"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "id": 23,
+                            "module": "util:SetVariables",
+                            "version": 1,
+                            "parameters": {},
+                            "mapper": {
+                                "scope": "roundtrip",
+                                "variables": [
+                                    {
+                                        "name": "start_local",
+                                        "value": "{{formatDate(parseDate(22.start; \"YYYY-MM-DDTHH:mm:ssZ\"); \"YYYY-MM-DD HH:mm:ss\"; \"America/Mexico_City\")}}"
+                                    },
+                                    {
+                                        "name": "end_local",
+                                        "value": "{{formatDate(parseDate(22.end; \"YYYY-MM-DDTHH:mm:ssZ\"); \"YYYY-MM-DD HH:mm:ss\"; \"America/Mexico_City\")}}"
+                                    }
+                                ]
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 3300,
+                                    "y": 300
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "scope": {
+                                            "label": "One cycle"
+                                        },
+                                        "variables": {
+                                            "items": [
+                                                null,
+                                                null
+                                            ]
+                                        }
+                                    }
+                                },
+                                "expect": [
+                                    {
+                                        "name": "variables",
+                                        "spec": [
+                                            {
+                                                "name": "name",
+                                                "type": "text",
+                                                "label": "Variable name",
+                                                "required": true
+                                            },
+                                            {
+                                                "name": "value",
+                                                "type": "any",
+                                                "label": "Variable value"
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Variables"
+                                    },
+                                    {
+                                        "name": "scope",
+                                        "type": "select",
+                                        "label": "Variable lifetime",
+                                        "required": true,
+                                        "validate": {
+                                            "enum": [
+                                                "roundtrip",
+                                                "execution"
+                                            ]
+                                        }
+                                    }
+                                ],
+                                "interface": [
+                                    {
+                                        "name": "start_local",
+                                        "type": "any",
+                                        "label": "start_local"
+                                    },
+                                    {
+                                        "name": "end_local",
+                                        "type": "any",
+                                        "label": "end_local"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "id": 24,
+                            "module": "builtin:BasicAggregator",
+                            "version": 1,
+                            "parameters": {
+                                "feeder": 22
+                            },
+                            "mapper": {
+                                "status": "{{22.status}}",
+                                "summary": "{{22.summary}}",
+                                "end_local": "{{23.end_local}}",
+                                "start_local": "{{23.start_local}}"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 3600,
+                                    "y": 300
+                                },
+                                "restore": {
+                                    "extra": {
+                                        "feeder": {
+                                            "label": "Iterator [22]"
+                                        },
+                                        "target": {
+                                            "label": "Custom"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "id": 3,
+                            "module": "scenario-service:ReturnData",
+                            "version": 2,
+                            "parameters": {},
+                            "mapper": {
+                                "eventos_del_dia": "{{20.array}}",
+                                "eventos_confictivos": "{{24.array}}"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 3900,
+                                    "y": 300
+                                },
+                                "restore": {},
+                                "expect": [
+                                    {
+                                        "name": "eventos_confictivos",
+                                        "type": "any",
+                                        "label": "",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "eventos_del_dia",
+                                        "type": "any",
+                                        "label": "",
+                                        "required": true
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "metadata": {
+        "instant": false,
+        "version": 1,
+        "scenario": {
+            "roundtrips": 1,
+            "maxErrors": 3,
+            "autoCommit": true,
+            "autoCommitTriggerLast": true,
+            "sequential": false,
+            "slots": null,
+            "confidential": false,
+            "dataloss": false,
+            "dlq": false,
+            "freshVariables": false
+        },
+        "designer": {
+            "orphans": []
+        },
+        "zone": "us2.make.com",
+        "notes": []
+    },
+    "io": {
+        "input_spec": [
+            {
+                "help": "Fecha y hora de inicio del rango de la cita (preferiblemente con margen para alternativas de hora), formato DD.MM.YYYY HH:mm (CST zona horaria)",
+                "name": "start_time",
+                "type": "text",
+                "label": "",
+                "default": "",
+                "required": true,
+                "multiline": false
+            },
+            {
+                "help": "Fecha y hora de fin del rango de la cita (preferiblemente con margen para alternativas de hora), formato DD.MM.YYYY HH:mm (CST zona horaria)",
+                "name": "fecha_fin",
+                "type": "text",
+                "label": "",
+                "default": "",
+                "required": true,
+                "multiline": false
+            },
+            {
+                "help": "El numero telefónico del prospecto",
+                "name": "telefono_prospecto",
+                "type": "text",
+                "label": "",
+                "default": "",
+                "required": true,
+                "multiline": false
+            },
+            {
+                "help": "Email del prospecto si se conoce",
+                "name": "email",
+                "type": "text",
+                "label": "",
+                "default": "",
+                "required": false,
+                "multiline": false
+            },
+            {
+                "help": "Nombre/nombres del prospecto",
+                "name": "first_name",
+                "type": "text",
+                "label": "",
+                "default": "",
+                "required": false,
+                "multiline": false
+            },
+            {
+                "help": "Apellido/apellidos del prospecto",
+                "name": "last_name",
+                "type": "text",
+                "label": "",
+                "default": "",
+                "required": false,
+                "multiline": false
+            },
+            {
+                "help": "Lead ID de meta (en caso de venir de lead campaign)",
+                "name": "lead_id",
+                "type": "number",
+                "label": "",
+                "default": null,
+                "required": false
+            },
+            {
+                "help": "WID correspondiente al contacto de wassenger, incluir si está disponible.",
+                "name": "wassenger_contact_wid",
+                "type": "text",
+                "label": "",
+                "default": "",
+                "required": false,
+                "multiline": false
+            }
+        ],
+        "output_spec": [
+            {
+                "help": "Array de eventos que SE SOLAPAN con el horario solicitado. Si está VACÍO, significa que NO hay conflictos y el horario está DISPONIBLE.",
+                "name": "eventos_confictivos",
+                "type": "any",
+                "label": "",
+                "default": "",
+                "required": true
+            },
+            {
+                "help": "Todos los eventos del día (solo para contexto). NO indica ocupación del horario específico solicitado. VACÍO = no hay eventos.",
+                "name": "eventos_del_dia",
+                "type": "any",
+                "label": "",
+                "default": "",
+                "required": true
+            }
+        ]
+    }
+}
