@@ -10,15 +10,14 @@ export const crmHandoffHuman = async (args: { client_id: string; phone_number: s
   }
 
   try {
-    // Assuming Wassenger API for tagging
-    // Note: This is a hypothetical endpoint based on requirements. 
-    // Actual Wassenger API might differ.
-    const response = await axios.post(
-      `https://api.wassenger.com/v1/chat/labels`, 
-      {
-        phone: phone_number,
-        labels: ["humano"]
-      },
+    const deviceId = clientConfig.wassenger.deviceId;
+    const chatWid = phone_number.includes('@c.us') ? phone_number : `${phone_number}@c.us`;
+
+    const response = await axios.patch(
+      `https://api.wassenger.com/v1/chat/${deviceId}/chats/${chatWid}/labels?upsert=true`, 
+      [
+        "humano"
+      ],
       {
         headers: {
           "Token": clientConfig.wassenger.apiKey
