@@ -73,9 +73,14 @@ export const startMcpServer = async () => {
                   phone: { type: "string" },
                   email: { type: "string" },
                   fbp: { type: "string" },
-                  fbc: { type: "string" }
+                  fbc: { type: "string" },
+                  client_user_agent: { type: "string" },
+                  client_ip_address: { type: "string" }
                 }
-              }
+              },
+              event_source_url: { type: "string" },
+              event_id: { type: "string" },
+              action_source: { type: "string" }
             },
             required: ["client_id", "event_name", "user_data"]
           }
