@@ -135,15 +135,27 @@ export const calendarCreateAppointment = async (args: {
   const calendar = google.calendar({ version: 'v3', auth });
 
   // Double check availability
-  const availabilityCheck = await calendar.events.list({
-    calendarId: clientConfig.google.bookingCalendarId,
-    timeMin: start_time,
-    timeMax: end_time,
-    singleEvents: true,
+  const checkPromises = clientConfig.google.availabilityCalendars.map(async (calId) => {
+    try {
+      const response = await calendar.events.list({
+        calendarId: calId,
+        timeMin: start_time,
+        timeMax: end_time,
+        singleEvents: true,
+      });
+      return response.data.items || [];
+    } catch (err) {
+      console.error(`Error checking availability for ${calId} during booking:`, err);
+      // Decide if we should block or continue. For now, we log and continue (treat as no events found on this failing calendar)
+      return []; 
+    }
   });
 
-  if (availabilityCheck.data.items && availabilityCheck.data.items.length > 0) {
-     return { content: [{ type: "text", text: JSON.stringify({ success: false, error: "Slot no longer available" }) }] };
+  const checkResults = await Promise.all(checkPromises);
+  const conflictingEvents = checkResults.flat();
+
+  if (conflictingEvents.length > 0) {
+     return { content: [{ type: "text", text: JSON.stringify({ success: false, error: "Slot no longer available (Conflict detected)" }) }] };
   }
 
   try {

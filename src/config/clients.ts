@@ -33,5 +33,20 @@ export const clients: Record<string, ClientConfig> = {
       deviceId: "68fd1067b488de07029fccc2"
     }
   },
+  "test_dental": {
+    google: {
+      serviceAccountPath: "./creds/dental_bot_creds.json",
+      availabilityCalendars: ["emmmyrtgame@gmail.com", "emmyrttutoriales@gmail.com"], // Add other calendars here if needed
+      bookingCalendarId: "emmmyrtgame@gmail.com"
+    },
+    meta: {
+      pixelId: "123456789", // Placeholder
+      accessToken: process.env.WHITE_DENTAL_META_TOKEN || ""
+    },
+    wassenger: {
+      apiKey: process.env.WHITE_DENTAL_WASSENGER_TOKEN || "",
+      deviceId: "68fd1067b488de07029fccc2"
+    }
+  },
   // Add other clients here
 };
