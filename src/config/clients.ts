@@ -43,7 +43,7 @@ export const clients: Record<string, ClientConfig> = {
       "1h": "Hola {name}, nos vemos en 1 hora para tu cita a las {time}."
     }
   },
-  "test_dental": {
+  /*"test_dental": {
     google: {
       serviceAccountPath: "./creds/dental_bot_creds.json",
       availabilityCalendars: ["emmmyrtgame@gmail.com", "emmyrttutoriales@gmail.com"], // Add other calendars here if needed
@@ -62,6 +62,6 @@ export const clients: Record<string, ClientConfig> = {
       "3h": "Hola {name}, te recordamos tu cita hoy a las {time}.",
       "1h": "Hola {name}, nos vemos en 1 hora para tu cita a las {time}."
     }
-  },
+  },*/
   // Add other clients here
 };
