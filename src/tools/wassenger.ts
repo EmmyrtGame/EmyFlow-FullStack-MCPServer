@@ -57,7 +57,12 @@ export const scheduleAppointmentReminders = async (
   const now = new Date();
 
   const timeFormatted = appointmentTime.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+  const dayOfWeek = appointmentTime.toLocaleDateString('es-MX', { weekday: 'long' });
+  // Capitalize first letter of day
+  const dayOfWeekCapitalized = dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1);
   
+  const dayNum = appointmentTime.toLocaleDateString('es-MX', { day: 'numeric', month: 'long' });
+
   const reminders = [
     { label: '24h', details: { hours: 24 } },
     { label: '3h', details: { hours: 3 } },
@@ -70,16 +75,28 @@ export const scheduleAppointmentReminders = async (
 
     const reminderTime = new Date(appointmentTime);
     reminderTime.setHours(reminderTime.getHours() - reminder.details.hours);
-
+    
     if (reminderTime > now) {
-      const message = template
-        .replace('{name}', patientName)
-        .replace('{time}', timeFormatted);
+      let message = template
+        .replace(/{{patient_name}}/g, patientName)
+        .replace(/{{time}}/g, timeFormatted)
+        .replace(/{{day_of_week}}/g, dayOfWeekCapitalized)
+        .replace(/{{day_num}}/g, dayNum);
+
+      if (clientConfig.location) {
+        message = message
+            .replace(/{{location_address}}/g, clientConfig.location.address)
+            .replace(/{{location_map_url}}/g, clientConfig.location.mapUrl);
+      }
+
+      // Fallback for old templates if any exist or if user reverts
+      message = message.replace(/{name}/g, patientName).replace(/{time}/g, timeFormatted);
+
 
       try {
         await scheduleWassengerMessage(
             clientConfig.wassenger.apiKey, 
-            clientConfig.wassenger.deviceId, // Ensure we use the correct deviceId
+            clientConfig.wassenger.deviceId, 
             phone, 
             message, 
             reminderTime.toISOString()
