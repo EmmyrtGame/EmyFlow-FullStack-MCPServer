@@ -2,6 +2,7 @@ import express from 'express';
 import axios from 'axios';
 import { clients } from '../config/clients';
 import { trackLeadEvent } from '../tools/marketing';
+import { updateContactMetadata } from '../tools/crm';
 
 const router = express.Router();
 
@@ -30,25 +31,41 @@ router.post('/whatsapp', (req, res) => {
     
     // Check for Lead Event (Inbound reply that is NOT the first message)
     if (data.flow === 'inbound' && data.meta && data.meta.isFirstMessage === false) {
-       // Identify Client from Device ID
-       // payload structure: req.body.device.id or req.body.data.device? User payload shows top level "device" object with "id"
-       // But wait, the user provided payload shows "device" at root level AND "data" at root level.
-       const deviceId = req.body.device?.id;
+       // Check if 'capi_lead_enviado' metadata is already true
+       const contactMetadata = data.chat?.contact?.metadata || [];
+       const isLeadSent = contactMetadata.some((m: any) => m.key === 'capi_lead_enviado' && m.value === 'true');
        
-       if (deviceId) {
-          const clientEntry = Object.entries(clients).find(([_, config]: [string, any]) => config.wassenger.deviceId === deviceId);
-          if (clientEntry) {
-             const [clientId, _] = clientEntry;
-             console.log(`[Webhook] Detected potential Lead for client ${clientId} (Device: ${deviceId})`);
-             
-             // Track Lead Event asynchronously
-             trackLeadEvent({
-               client_id: clientId,
-               user_data: {
-                 phone: userId // fromNumber
-               }
-             }).catch((err: any) => console.error('[Webhook] Failed to track automated Lead:', err));
-          }
+       if (!isLeadSent) {
+
+         // Identify Client from Device ID
+         const deviceId = req.body.device?.id;
+         
+         if (deviceId) {
+            const clientEntry = Object.entries(clients).find(([_, config]: [string, any]) => config.wassenger.deviceId === deviceId);
+            if (clientEntry) {
+               const [clientId, _] = clientEntry;
+               console.log(`[Webhook] Detected potential Lead for client ${clientId} (Device: ${deviceId})`);
+               
+               // Track Lead Event asynchronously
+               trackLeadEvent({
+                 client_id: clientId,
+                 user_data: {
+                   phone: userId // fromNumber
+                 }
+               }).then(async (result) => {
+                  if (result && result.success) {
+                    // Update metadata to prevent duplicates
+                     await updateContactMetadata({
+                       client_id: clientId,
+                       phone_number: userId,
+                       metadata: { 'capi_lead_enviado': 'true' }
+                     }).catch((err: any) => console.error('[Webhook] Failed to update lead metadata:', err));
+                  }
+               }).catch((err: any) => console.error('[Webhook] Failed to track automated Lead:', err));
+            }
+         }
+       } else {
+         console.log(`[Webhook] Lead event skipped for ${userId}: 'capi_lead_enviado' metadata already true.`);
        }
     }
 
