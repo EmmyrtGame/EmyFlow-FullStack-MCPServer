@@ -44,7 +44,7 @@ app.get('/sse', async (req, res) => {
   // Use https by default for production, or req.protocol if trusted
   const protocol = req.headers['x-forwarded-proto'] || 'https';
   const host = req.headers.host;
-  const endpointUrl = `${protocol}://${host}/messages`;
+  const endpointUrl = 'https://slategray-baboon-146694.hostingersite.com/messages';
 
   console.log(`Setting up transport with endpoint: ${endpointUrl}`);
 
