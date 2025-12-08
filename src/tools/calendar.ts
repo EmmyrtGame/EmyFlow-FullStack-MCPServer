@@ -135,13 +135,13 @@ export const calendarCheckAvailability = async (args: { client_id: string; start
 /**
  * Creates an appointment in Google Calendar.
  * @param args.client_id The client identifier.
- * @param args.patient_data Patient details (name, phone, email, reason).
+ * @param args.patient_data Patient details (name, phone).
  * @param args.start_time Start time of the appointment.
  * @param args.end_time End time of the appointment.
  */
 export const calendarCreateAppointment = async (args: { 
   client_id: string; 
-  patient_data: { nombre: string; telefono: string; email: string; motivo: string };
+  patient_data: { nombre: string; telefono: string };
   start_time: string; 
   end_time: string;
   description: string;
@@ -186,7 +186,7 @@ export const calendarCreateAppointment = async (args: {
 
   try {
     const event = {
-      summary: `Cita: ${patient_data.nombre} - ${patient_data.motivo}`,
+      summary: `Evaluación Dental: ${patient_data.nombre}`,
       description: description,
       start: { dateTime: start_time },
       end: { dateTime: end_time },
@@ -209,8 +209,7 @@ export const calendarCreateAppointment = async (args: {
     trackScheduleEvent({
       client_id,
       user_data: {
-        phone: patient_data.telefono,
-        email: patient_data.email
+        phone: patient_data.telefono
       }
     });
 
