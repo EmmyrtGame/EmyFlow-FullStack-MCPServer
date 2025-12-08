@@ -32,7 +32,8 @@ export const createMcpServer = () => {
               client_id: { type: "string", description: "The unique identifier for the dental clinic (e.g., 'dental_clinic_a'). MUST use the ID provided in the current context. DO NOT GUESS or hallucinate." },
               start_time: { type: "string", description: "Optional. Start time of the slot to check (ISO string)." },
               end_time: { type: "string", description: "Optional. End time of the slot to check (ISO string)." },
-              query_date: { type: "string", description: "Optional. Date to check the full day's agenda (YYYY-MM-DD or ISO string)." }
+              query_date: { type: "string", description: "Optional. Date to check the full day's agenda (YYYY-MM-DD or ISO string)." },
+              sede: { type: "string", description: "Optional. The specific location ID (e.g., 'satellite_office') to check availability for. If omitted, checks the default location." }
             },
             required: ["client_id"]
           }
@@ -54,7 +55,8 @@ export const createMcpServer = () => {
               },
               start_time: { type: "string", description: "Start time of the appointment (ISO string)" },
               end_time: { type: "string", description: "End time of the appointment (ISO string)" },
-              description: { type: "string", description: "Description for the calendar event. Should include patient contact info (phone) and any other notes." }
+              description: { type: "string", description: "Description for the calendar event. Should include patient contact info (phone) and any other notes." },
+              sede: { type: "string", description: "Optional. The specific location ID to book the appointment at. If omitted, uses the default location." }
             },
             required: ["client_id", "patient_data", "start_time", "end_time", "description"]
           }

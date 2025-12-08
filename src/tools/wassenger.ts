@@ -45,13 +45,17 @@ export const scheduleAppointmentReminders = async (
   client_id: string,
   phone: string,
   appointmentTimeStr: string,
-  patientName: string
+  patientName: string,
+  locationConfig?: any // Optional location config override
 ) => {
   const clientConfig = clients[client_id];
   if (!clientConfig || !clientConfig.reminderTemplates) {
     console.warn(`Client ${client_id} missing config or reminderTemplates`);
     return;
   }
+
+  // Use provided locationConfig or fall back to clientConfig.location
+  const activeLocation = locationConfig?.location || clientConfig.location;
 
   const appointmentTime = new Date(appointmentTimeStr);
   const now = new Date();
@@ -83,10 +87,10 @@ export const scheduleAppointmentReminders = async (
         .replace(/{{day_of_week}}/g, dayOfWeekCapitalized)
         .replace(/{{day_num}}/g, dayNum);
 
-      if (clientConfig.location) {
+      if (activeLocation) {
         message = message
-            .replace(/{{location_address}}/g, clientConfig.location.address)
-            .replace(/{{location_map_url}}/g, clientConfig.location.mapUrl);
+            .replace(/{{location_address}}/g, activeLocation.address)
+            .replace(/{{location_map_url}}/g, activeLocation.mapUrl);
       }
 
       // Fallback for old templates if any exist or if user reverts

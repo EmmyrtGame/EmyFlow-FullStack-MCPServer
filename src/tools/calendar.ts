@@ -36,12 +36,32 @@ const parseInputDate = (dateStr: string): Date => {
   return new Date(dateStr);
 };
 
-export const calendarCheckAvailability = async (args: { client_id: string; start_time?: string; end_time?: string; query_date?: string }) => {
-  const { client_id, start_time, end_time, query_date } = args;
+export const calendarCheckAvailability = async (args: { client_id: string; start_time?: string; end_time?: string; query_date?: string; sede?: string }) => {
+  const { client_id, start_time, end_time, query_date, sede } = args;
   const clientConfig = clients[client_id];
 
   if (!clientConfig) {
     throw new Error(`Client ${client_id} not found`);
+  }
+
+  // Determine which calendars to check
+  let availabilityCalendars = clientConfig.google.availabilityCalendars;
+  
+  const strategy = clientConfig.availabilityStrategy || 'PER_LOCATION';
+
+  if (strategy === 'GLOBAL') {
+    // In GLOBAL mode, we always check the top-level availabilityCalendars list.
+    // This assumes the user has listed ALL shared doctors/resources in the top-level list.
+    availabilityCalendars = clientConfig.google.availabilityCalendars;
+  } else {
+    // PER_LOCATION mode (default)
+    if (sede) {
+      if (clientConfig.locations && clientConfig.locations[sede]) {
+        availabilityCalendars = clientConfig.locations[sede].google.availabilityCalendars;
+      } else {
+         throw new Error(`Location (sede) '${sede}' not found for client ${client_id}`);
+      }
+    }
   }
 
   const auth = new google.auth.GoogleAuth({
@@ -72,7 +92,7 @@ export const calendarCheckAvailability = async (args: { client_id: string; start
   searchEnd.setDate(searchEnd.getDate() + 1); // Next day
 
   try {
-    const calendarPromises = clientConfig.google.availabilityCalendars.map(async (calId) => {
+    const calendarPromises = availabilityCalendars.map(async (calId) => {
       try {
         const response = await calendar.events.list({
           calendarId: calId,
@@ -171,12 +191,40 @@ export const calendarCreateAppointment = async (args: {
   start_time: string; 
   end_time: string;
   description: string;
+  sede?: string;
 }) => {
-  const { client_id, patient_data, start_time, end_time, description } = args;
+  const { client_id, patient_data, start_time, end_time, description, sede } = args;
   const clientConfig = clients[client_id];
 
   if (!clientConfig) {
     throw new Error(`Client ${client_id} not found`);
+  }
+
+  // Determine booking calendar
+  let availabilityCalendars = clientConfig.google.availabilityCalendars;
+  let bookingCalendarId = clientConfig.google.bookingCalendarId;
+  let locationConfig = null;
+  const strategy = clientConfig.availabilityStrategy || 'PER_LOCATION';
+
+  // 1. Resolve Location & Booking Calendar (Where the event lives)
+  if (sede) {
+    if (clientConfig.locations && clientConfig.locations[sede]) {
+      // If we have a specific location, we default to its booking calendar
+      bookingCalendarId = clientConfig.locations[sede].google.bookingCalendarId;
+      locationConfig = clientConfig.locations[sede];
+      
+      // If Strategy is PER_LOCATION, we also scope usage check to this location
+      if (strategy === 'PER_LOCATION') {
+        availabilityCalendars = clientConfig.locations[sede].google.availabilityCalendars;
+      }
+    } else {
+      throw new Error(`Location (sede) '${sede}' not found for client ${client_id}`);
+    }
+  }
+
+  // 2. If Strategy is GLOBAL, override availabilityCalendars to top-level (shared resources)
+  if (strategy === 'GLOBAL') {
+    availabilityCalendars = clientConfig.google.availabilityCalendars;
   }
 
   const auth = new google.auth.GoogleAuth({
@@ -187,7 +235,7 @@ export const calendarCreateAppointment = async (args: {
   const calendar = google.calendar({ version: 'v3', auth });
 
 
-  const checkPromises = clientConfig.google.availabilityCalendars.map(async (calId) => {
+  const checkPromises = availabilityCalendars.map(async (calId) => {
     try {
       const response = await calendar.events.list({
         calendarId: calId,
@@ -219,7 +267,7 @@ export const calendarCreateAppointment = async (args: {
     };
 
     const response = await calendar.events.insert({
-      calendarId: clientConfig.google.bookingCalendarId,
+      calendarId: bookingCalendarId,
       requestBody: event,
     });
 
@@ -228,7 +276,8 @@ export const calendarCreateAppointment = async (args: {
       client_id, 
       patient_data.telefono, 
       start_time, 
-      patient_data.nombre
+      patient_data.nombre,
+      locationConfig // Pass location config if available
     );
 
 
