@@ -3,6 +3,7 @@ import { clients } from '../config/clients';
 import { z } from 'zod';
 import { scheduleAppointmentReminders } from './wassenger';
 import { trackScheduleEvent } from './marketing';
+import { DateTime } from 'luxon';
 
 /**
  * Checks appointment availability in Google Calendar.
@@ -11,29 +12,47 @@ import { trackScheduleEvent } from './marketing';
  * @param args.end_time Optional end time to check specific slot.
  * @param args.query_date Optional date to check full day availability.
  */
-// Helper to parse "DD.MM.YYYY HH:mm" or "DD.MM.YYYY" or standard ISO
-const parseInputDate = (dateStr: string): Date => {
-  // Check for DD.MM.YYYY format
-  const dmYMatch = dateStr.match(/^(\d{2})\.(\d{2})\.(\d{4})(?:\s+(\d{2}):(\d{2}))?$/);
-  if (dmYMatch) {
-    const day = parseInt(dmYMatch[1], 10);
-    const month = parseInt(dmYMatch[2], 10) - 1; // Months are 0-indexed
-    const year = parseInt(dmYMatch[3], 10);
-    const hour = dmYMatch[4] ? parseInt(dmYMatch[4], 10) : 0;
-    const minute = dmYMatch[5] ? parseInt(dmYMatch[5], 10) : 0;
-    return new Date(year, month, day, hour, minute);
-  }
-  
-  // Check for YYYY-MM-DD format (treat as local to avoid UTC shift)
-  const yMDMatch = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if (yMDMatch) {
-    const year = parseInt(yMDMatch[1], 10);
-    const month = parseInt(yMDMatch[2], 10) - 1;
-    const day = parseInt(yMDMatch[3], 10);
-    return new Date(year, month, day);
+// Helper to parse input date string into a Luxon DateTime in the client's timezone
+const parseInputDate = (dateStr: string, timezone: string): DateTime => {
+  // Check for DD.MM.YYYY HH:mm format
+  const dmYHM_Match = dateStr.match(/^(\d{2})\.(\d{2})\.(\d{4})\s+(\d{2}):(\d{2})$/);
+  if (dmYHM_Match) {
+    return DateTime.fromObject({
+        day: parseInt(dmYHM_Match[1]),
+        month: parseInt(dmYHM_Match[2]),
+        year: parseInt(dmYHM_Match[3]),
+        hour: parseInt(dmYHM_Match[4]),
+        minute: parseInt(dmYHM_Match[5])
+    }, { zone: timezone });
   }
 
-  return new Date(dateStr);
+  // Check for DD.MM.YYYY format (start of day)
+  const dmY_Match = dateStr.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+  if (dmY_Match) {
+      return DateTime.fromObject({
+          day: parseInt(dmY_Match[1]),
+          month: parseInt(dmY_Match[2]),
+          year: parseInt(dmY_Match[3]),
+          hour: 0, minute: 0, second: 0
+      }, { zone: timezone });
+  }
+  
+  // Check for YYYY-MM-DD format (start of day)
+  const yMD_Match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (yMD_Match) {
+    return DateTime.fromObject({
+        year: parseInt(yMD_Match[1]),
+        month: parseInt(yMD_Match[2]),
+        day: parseInt(yMD_Match[3]),
+        hour: 0, minute: 0, second: 0
+    }, { zone: timezone });
+  }
+
+  // Fallback to ISO parsing, setting zone
+  const iso = DateTime.fromISO(dateStr, { zone: timezone });
+  if (iso.isValid) return iso;
+
+  throw new Error(`Invalid date format: ${dateStr}`);
 };
 
 export const calendarCheckAvailability = async (args: { client_id: string; start_time?: string; end_time?: string; query_date?: string; sede?: string }) => {
@@ -50,11 +69,8 @@ export const calendarCheckAvailability = async (args: { client_id: string; start
   const strategy = clientConfig.availabilityStrategy || 'PER_LOCATION';
 
   if (strategy === 'GLOBAL') {
-    // In GLOBAL mode, we always check the top-level availabilityCalendars list.
-    // This assumes the user has listed ALL shared doctors/resources in the top-level list.
     availabilityCalendars = clientConfig.google.availabilityCalendars;
   } else {
-    // PER_LOCATION mode (default)
     if (sede) {
       if (clientConfig.locations && clientConfig.locations[sede]) {
         availabilityCalendars = clientConfig.locations[sede].google.availabilityCalendars;
@@ -71,40 +87,33 @@ export const calendarCheckAvailability = async (args: { client_id: string; start
 
   const calendar = google.calendar({ version: 'v3', auth });
 
-  let targetDate: Date;
+  let targetDate: DateTime;
   if (start_time) {
-    targetDate = parseInputDate(start_time);
+    targetDate = parseInputDate(start_time, clientConfig.timezone);
   } else if (query_date) {
-    targetDate = parseInputDate(query_date);
+    targetDate = parseInputDate(query_date, clientConfig.timezone);
   } else {
-    targetDate = new Date(); // Default to today
+    targetDate = DateTime.now().setZone(clientConfig.timezone); 
   }
 
-  // Calculate time range in UTC that covers the entire day in the target timezone
-  // We widen the search window siginificantly (-48h to +48h from target) to ensure we capture
-  // the full local day regardless of timezone offset extreme edge cases.
-  const searchStart = new Date(targetDate);
-  searchStart.setHours(0, 0, 0, 0);
-  searchStart.setDate(searchStart.getDate() - 2); // Previous 2 days
-  
-  const searchEnd = new Date(targetDate);
-  searchEnd.setHours(23, 59, 59, 999);
-  searchEnd.setDate(searchEnd.getDate() + 2); // Next 2 days
+  // Calculate search window in UTC
+  const searchStart = targetDate.startOf('day').minus({ days: 2 }).toUTC();
+  const searchEnd = targetDate.endOf('day').plus({ days: 2 }).toUTC();
 
   try {
     const calendarPromises = availabilityCalendars.map(async (calId) => {
       try {
         const response = await calendar.events.list({
           calendarId: calId,
-          timeMin: searchStart.toISOString(),
-          timeMax: searchEnd.toISOString(),
+          timeMin: searchStart.toISO()!,
+          timeMax: searchEnd.toISO()!,
           singleEvents: true,
           orderBy: 'startTime',
         });
         return response.data.items || [];
       } catch (err) {
         console.error(`Error fetching events from ${calId}:`, err);
-        return []; // Continue even if one calendar fails
+        return []; 
       }
     });
 
@@ -112,34 +121,29 @@ export const calendarCheckAvailability = async (args: { client_id: string; start
     const allEvents = results.flat();
 
     // Filter events to only those that fall within the target day in the client's timezone
-    // FIXED: Use the exact YYYY-MM-DD string from input if available, otherwise calculate from targetDate
     let targetDateString: string;
     
     if (query_date) {
-        // If user explicitly asked for "2025-12-09", we filter for THAT string in the client's timezone.
-        // We do NOT re-calculate it from a Date object that might have shifted.
-        targetDateString = query_date;
-    } else if (start_time) {
-         // If checking a slot, we care about the day of that slot in the client's timezone
-         targetDateString = parseInputDate(start_time).toLocaleDateString('en-CA', { timeZone: clientConfig.timezone });
+        targetDateString = query_date; // Trust the string if provided
     } else {
-         // Default today
-         targetDateString = new Date().toLocaleDateString('en-CA', { timeZone: clientConfig.timezone });
+        // Otherwise derive YYYY-MM-DD from the targetDate object we built
+        targetDateString = targetDate.toFormat('yyyy-MM-dd');
     }
     
     const events = allEvents.filter(e => {
       if (!e.start?.dateTime) return false;
-      const eventDateInZone = new Date(e.start.dateTime).toLocaleDateString('en-CA', { timeZone: clientConfig.timezone });
-      return eventDateInZone === targetDateString;
+      // Parse event time in client's timezone
+      const eventTime = DateTime.fromISO(e.start.dateTime).setZone(clientConfig.timezone);
+      return eventTime.toFormat('yyyy-MM-dd') === targetDateString;
     }).sort((a, b) => {
-      const tA = new Date(a.start?.dateTime || 0).getTime();
-      const tB = new Date(b.start?.dateTime || 0).getTime();
+      const tA = DateTime.fromISO(a.start?.dateTime || '').toMillis();
+      const tB = DateTime.fromISO(b.start?.dateTime || '').toMillis();
       return tA - tB;
     });
     
     const busySlots = events.map(e => {
-      const start = e.start?.dateTime ? new Date(e.start.dateTime).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', timeZone: clientConfig.timezone }) : 'N/A';
-      const end = e.end?.dateTime ? new Date(e.end.dateTime).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', timeZone: clientConfig.timezone }) : 'N/A';
+      const start = e.start?.dateTime ? DateTime.fromISO(e.start.dateTime).setZone(clientConfig.timezone).toFormat('hh:mm a') : 'N/A';
+      const end = e.end?.dateTime ? DateTime.fromISO(e.end.dateTime).setZone(clientConfig.timezone).toFormat('hh:mm a') : 'N/A';
       return `${start} - ${end} (Ocupado)`;
     });
 
@@ -152,13 +156,19 @@ export const calendarCheckAvailability = async (args: { client_id: string; start
     let conflictDetails = null;
 
     if (start_time && end_time) {
-      const checkStart = parseInputDate(start_time).getTime();
-      const checkEnd = parseInputDate(end_time).getTime();
+      // Parse inputs into specific Timezone-aware DateTimes
+      const checkStart = parseInputDate(start_time, clientConfig.timezone);
+      const checkEnd = parseInputDate(end_time, clientConfig.timezone);
 
+      // Conflict Check using Milliseconds comparison (Epoch is universal)
       const conflict = events.find(e => {
-        const eventStart = new Date(e.start?.dateTime || '').getTime();
-        const eventEnd = new Date(e.end?.dateTime || '').getTime();
-        return (checkStart < eventEnd && checkEnd > eventStart); // Overlap formula
+        const eventStart = DateTime.fromISO(e.start?.dateTime || '').toMillis();
+        const eventEnd = DateTime.fromISO(e.end?.dateTime || '').toMillis();
+        
+        const checkStartMs = checkStart.toMillis();
+        const checkEndMs = checkEnd.toMillis();
+
+        return (checkStartMs < eventEnd && checkEndMs > eventStart); 
       });
 
       if (conflict) {
