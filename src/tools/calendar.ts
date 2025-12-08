@@ -81,15 +81,15 @@ export const calendarCheckAvailability = async (args: { client_id: string; start
   }
 
   // Calculate time range in UTC that covers the entire day in the target timezone
-  // We widen the search window (e.g. -24h to +24h from UTC midnight) to ensure we capture
-  // the full local day regardless of timezone offset. We will filter later.
+  // We widen the search window siginificantly (-48h to +48h from target) to ensure we capture
+  // the full local day regardless of timezone offset extreme edge cases.
   const searchStart = new Date(targetDate);
   searchStart.setHours(0, 0, 0, 0);
-  searchStart.setDate(searchStart.getDate() - 1); // Previous day
+  searchStart.setDate(searchStart.getDate() - 2); // Previous 2 days
   
   const searchEnd = new Date(targetDate);
   searchEnd.setHours(23, 59, 59, 999);
-  searchEnd.setDate(searchEnd.getDate() + 1); // Next day
+  searchEnd.setDate(searchEnd.getDate() + 2); // Next 2 days
 
   try {
     const calendarPromises = availabilityCalendars.map(async (calId) => {
@@ -112,8 +112,20 @@ export const calendarCheckAvailability = async (args: { client_id: string; start
     const allEvents = results.flat();
 
     // Filter events to only those that fall within the target day in the client's timezone
-    // FIXED: Use targetDate calculated above instead of falling back to new Date() if query_date is missing
-    const targetDateString = targetDate.toLocaleDateString('en-CA', { timeZone: clientConfig.timezone }); // YYYY-MM-DD
+    // FIXED: Use the exact YYYY-MM-DD string from input if available, otherwise calculate from targetDate
+    let targetDateString: string;
+    
+    if (query_date) {
+        // If user explicitly asked for "2025-12-09", we filter for THAT string in the client's timezone.
+        // We do NOT re-calculate it from a Date object that might have shifted.
+        targetDateString = query_date;
+    } else if (start_time) {
+         // If checking a slot, we care about the day of that slot in the client's timezone
+         targetDateString = parseInputDate(start_time).toLocaleDateString('en-CA', { timeZone: clientConfig.timezone });
+    } else {
+         // Default today
+         targetDateString = new Date().toLocaleDateString('en-CA', { timeZone: clientConfig.timezone });
+    }
     
     const events = allEvents.filter(e => {
       if (!e.start?.dateTime) return false;
