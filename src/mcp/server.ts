@@ -39,7 +39,7 @@ export const createMcpServer = () => {
         },
         {
           name: "calendar_create_appointment",
-          description: "Schedule and confirm a new appointment. REQUIRES collecting all patient data (name, phone, email, reason) first. Will fail if the slot is no longer available.",
+          description: "Schedule and confirm a new appointment. REQUIRES collecting all patient data (name, phone) first. Will fail if the slot is no longer available.",
           inputSchema: {
             type: "object",
             properties: {
