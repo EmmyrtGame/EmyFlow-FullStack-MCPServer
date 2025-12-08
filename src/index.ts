@@ -28,28 +28,31 @@ const transports = new Map<string, SSEServerTransport>();
 app.get('/sse', async (req, res) => {
   console.log('New SSE connection attempt');
   
-  // Prevent buffering on Nginx/Hostinger
+  // 1. Set headers manually to ensure correct SSE setup and anti-buffering
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
-  res.setHeader('X-Accel-Buffering', 'no');
+  res.setHeader('X-Accel-Buffering', 'no'); // For Nginx/Hostinger
   
-  // Flush immediately if possible
   if (res.flushHeaders) res.flushHeaders();
 
+  // 2. Send padding to bypass buffering (some proxies need 2KB+ to start streaming)
+  const padding = ': ' + ' '.repeat(2048) + '\n\n';
+  res.write(padding);
+
+  // 3. Construct Absolute URL for the endpoint
+  // Use https by default for production, or req.protocol if trusted
+  const protocol = req.headers['x-forwarded-proto'] || 'https';
+  const host = req.headers.host;
+  const endpointUrl = `${protocol}://${host}/messages`;
+
+  console.log(`Setting up transport with endpoint: ${endpointUrl}`);
+
   const server = createMcpServer();
-  const transport = new SSEServerTransport('/messages', res);
+  const transport = new SSEServerTransport(endpointUrl, res);
   
   // Connect the server to the transport
   await server.connect(transport);
-  
-  // The transport should now have a sessionId (accessible via private property or helper if SDK exposes it, 
-  // but for SSEServerTransport from SDK, it typically generates one just before sending the endpoint event).
-  // Ideally, we can access it. However, the standard SDK SSEServerTransport implementation 
-  // exposes it via the URL logic. 
-  // NOTE: In the official SDK, handlePostMessage expects to route to THIS transport.
-  // We need to capture the sessionId to route standard POST requests.
-  // The SDK's SSEServerTransport.sessionId is valid after start().
   
   const sessionId = (transport as any).sessionId;
   if (sessionId) {
