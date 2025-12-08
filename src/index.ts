@@ -53,6 +53,10 @@ app.get('/sse', async (req, res) => {
   // Connect the server to the transport
   await server.connect(transport);
   
+  // 4. Send padding AFTER connection is established (headers sent) to bypass buffering
+  // This is safe here because SSEServerTransport has already sent headers.
+  res.write(': ' + ' '.repeat(2048) + '\n\n');
+
   const sessionId = (transport as any).sessionId;
   if (sessionId) {
     transports.set(sessionId, transport);
@@ -69,6 +73,7 @@ app.get('/sse', async (req, res) => {
 });
 
 app.post('/messages', async (req, res) => {
+  console.log(`POST /messages received. Query: ${JSON.stringify(req.query)}`);
   const sessionId = req.query.sessionId as string;
   if (!sessionId) {
     res.status(400).send('Missing sessionId parameter');
