@@ -1,27 +1,25 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
   ErrorCode,
   McpError
 } from "@modelcontextprotocol/sdk/types.js";
-import { z } from "zod";
-
-// Create an MCP server
-export const server = new Server({
-  name: "DentalClinicMCP",
-  version: "1.0.0"
-}, {
-  capabilities: {
-    tools: {}
-  }
-});
 
 /**
- * Starts the MCP server, defining tools and handling requests.
+ * Creates and configures a new MCP server instance.
  */
-export const startMcpServer = async () => {
+export const createMcpServer = () => {
+  // Create a new MCP server instance
+  const server = new Server({
+    name: "DentalClinicMCP",
+    version: "1.0.0"
+  }, {
+    capabilities: {
+      tools: {}
+    }
+  });
+
   server.setRequestHandler(ListToolsRequestSchema, async () => {
     return {
       tools: [
@@ -104,8 +102,6 @@ export const startMcpServer = async () => {
     }
   });
 
-
-  // Transport connection skipped here.
-  // It will be handled in ../index.ts using SSEServerTransport for web
-  console.log('MCP Tools configured. Ready for transport connection.');
+  return server;
 };
+
