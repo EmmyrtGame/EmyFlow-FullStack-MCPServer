@@ -34,17 +34,16 @@ app.get('/sse', async (req, res) => {
   res.setHeader('Connection', 'keep-alive');
   res.setHeader('X-Accel-Buffering', 'no'); // For Nginx/Hostinger
   
-  if (res.flushHeaders) res.flushHeaders();
-
+  // if (res.flushHeaders) res.flushHeaders();
   // 2. Send padding to bypass buffering (some proxies need 2KB+ to start streaming)
-  const padding = ': ' + ' '.repeat(2048) + '\n\n';
-  res.write(padding);
+  // const padding = ': ' + ' '.repeat(2048) + '\n\n';
+  // res.write(padding);
 
   // 3. Construct Absolute URL for the endpoint
   // Use https by default for production, or req.protocol if trusted
   const protocol = req.headers['x-forwarded-proto'] || 'https';
   const host = req.headers.host;
-  const endpointUrl = 'https://slategray-baboon-146694.hostingersite.com/messages';
+  const endpointUrl = `https://slategray-baboon-146694.hostingersite.com/messages`;
 
   console.log(`Setting up transport with endpoint: ${endpointUrl}`);
 
