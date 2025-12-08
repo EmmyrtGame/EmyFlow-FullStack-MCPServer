@@ -11,6 +11,31 @@ import { trackScheduleEvent } from './marketing';
  * @param args.end_time Optional end time to check specific slot.
  * @param args.query_date Optional date to check full day availability.
  */
+// Helper to parse "DD.MM.YYYY HH:mm" or "DD.MM.YYYY" or standard ISO
+const parseInputDate = (dateStr: string): Date => {
+  // Check for DD.MM.YYYY format
+  const dmYMatch = dateStr.match(/^(\d{2})\.(\d{2})\.(\d{4})(?:\s+(\d{2}):(\d{2}))?$/);
+  if (dmYMatch) {
+    const day = parseInt(dmYMatch[1], 10);
+    const month = parseInt(dmYMatch[2], 10) - 1; // Months are 0-indexed
+    const year = parseInt(dmYMatch[3], 10);
+    const hour = dmYMatch[4] ? parseInt(dmYMatch[4], 10) : 0;
+    const minute = dmYMatch[5] ? parseInt(dmYMatch[5], 10) : 0;
+    return new Date(year, month, day, hour, minute);
+  }
+  
+  // Check for YYYY-MM-DD format (treat as local to avoid UTC shift)
+  const yMDMatch = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (yMDMatch) {
+    const year = parseInt(yMDMatch[1], 10);
+    const month = parseInt(yMDMatch[2], 10) - 1;
+    const day = parseInt(yMDMatch[3], 10);
+    return new Date(year, month, day);
+  }
+
+  return new Date(dateStr);
+};
+
 export const calendarCheckAvailability = async (args: { client_id: string; start_time?: string; end_time?: string; query_date?: string }) => {
   const { client_id, start_time, end_time, query_date } = args;
   const clientConfig = clients[client_id];
@@ -28,9 +53,9 @@ export const calendarCheckAvailability = async (args: { client_id: string; start
 
   let targetDate: Date;
   if (start_time) {
-    targetDate = new Date(start_time);
+    targetDate = parseInputDate(start_time);
   } else if (query_date) {
-    targetDate = new Date(query_date);
+    targetDate = parseInputDate(query_date);
   } else {
     targetDate = new Date(); // Default to today
   }
@@ -67,7 +92,8 @@ export const calendarCheckAvailability = async (args: { client_id: string; start
     const allEvents = results.flat();
 
     // Filter events to only those that fall within the target day in the client's timezone
-    const targetDateString = query_date || new Date().toLocaleDateString('en-CA', { timeZone: clientConfig.timezone }); // YYYY-MM-DD
+    // FIXED: Use targetDate calculated above instead of falling back to new Date() if query_date is missing
+    const targetDateString = targetDate.toLocaleDateString('en-CA', { timeZone: clientConfig.timezone }); // YYYY-MM-DD
     
     const events = allEvents.filter(e => {
       if (!e.start?.dateTime) return false;
@@ -94,8 +120,8 @@ export const calendarCheckAvailability = async (args: { client_id: string; start
     let conflictDetails = null;
 
     if (start_time && end_time) {
-      const checkStart = new Date(start_time).getTime();
-      const checkEnd = new Date(end_time).getTime();
+      const checkStart = parseInputDate(start_time).getTime();
+      const checkEnd = parseInputDate(end_time).getTime();
 
       const conflict = events.find(e => {
         const eventStart = new Date(e.start?.dateTime || '').getTime();
