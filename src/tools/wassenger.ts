@@ -1,6 +1,5 @@
-
 import axios from 'axios';
-import { clients } from '../config/clients';
+import { clientService } from '../services/client.service';
 
 const WASSENGER_API_URL = 'https://api.wassenger.com/v1/messages';
 
@@ -48,7 +47,7 @@ export const scheduleAppointmentReminders = async (
   patientName: string,
   locationConfig?: any // Optional location config override
 ) => {
-  const clientConfig = clients[client_id];
+  const clientConfig = await clientService.getClientConfig(client_id);
   if (!clientConfig || !clientConfig.reminderTemplates) {
     console.warn(`Client ${client_id} missing config or reminderTemplates`);
     return;
