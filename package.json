@@ -19,6 +19,7 @@
         "@types/cookie-parser": "^1.4.10",
         "@types/jsonwebtoken": "^9.0.10",
         "@types/luxon": "^3.7.1",
+        "@types/multer": "^2.0.0",
         "axios": "^1.6.0",
         "bcrypt": "^6.0.0",
         "cookie-parser": "^1.4.7",
@@ -29,6 +30,7 @@
         "googleapis": "^128.0.0",
         "jsonwebtoken": "^9.0.3",
         "luxon": "^3.7.2",
+        "multer": "^2.0.2",
         "prisma": "5.22.0",
         "zod": "^4.1.13"
     },
