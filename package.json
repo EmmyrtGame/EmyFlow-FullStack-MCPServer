@@ -14,14 +14,23 @@
     "license": "ISC",
     "dependencies": {
         "@modelcontextprotocol/sdk": "^0.6.0",
+        "@prisma/client": "5.22.0",
+        "@types/bcrypt": "^6.0.0",
+        "@types/cookie-parser": "^1.4.10",
+        "@types/jsonwebtoken": "^9.0.10",
         "@types/luxon": "^3.7.1",
         "axios": "^1.6.0",
+        "bcrypt": "^6.0.0",
+        "cookie-parser": "^1.4.7",
         "cors": "^2.8.5",
         "dotenv": "^16.3.1",
         "eventsource": "^4.1.0",
         "express": "^4.18.2",
         "googleapis": "^128.0.0",
-        "luxon": "^3.7.2"
+        "jsonwebtoken": "^9.0.3",
+        "luxon": "^3.7.2",
+        "prisma": "5.22.0",
+        "zod": "^4.1.13"
     },
     "devDependencies": {
         "@types/cors": "^2.8.17",

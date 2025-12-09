@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  password  String   // Hash bcrypt
+  email     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Client {
+  id        String   @id @default(cuid())
+  slug      String   @unique  // Ej: "white_dental"
+  name      String              // Nombre visible
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Configuraciones anidadas (JSON stringified)
+  google          String  // { serviceAccountPath, availabilityCalendars, bookingCalendarId }
+  meta            String  // { pixelId, accessToken }
+  wassenger       String  // { apiKey, deviceId }
+  location        String  // { address, mapUrl }
+  locations       String? // Múltiples sedes (opcional)
+  reminderTemplates String  // { "24h", "3h", "1h" }
+  
+  // Metadatos
+  timezone              String  @default("America/Mexico_City")
+  availabilityStrategy  String  @default("PER_LOCATION") // GLOBAL | PER_LOCATION
+}
+
+model ServiceAccount {
+  id          String   @id @default(cuid())
+  clientId    String   // FK a Client.id
+  fileName    String   // Nombre del archivo (ej: "white_dental_gcal.json")
+  encryptedContent String // Contenido cifrado AES-256
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@unique([clientId, fileName])
+}

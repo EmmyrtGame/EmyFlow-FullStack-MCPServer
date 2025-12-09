@@ -9,6 +9,8 @@ dotenv.config();
 
 import webhookRoutes from './routes/webhooks';
 
+import adminRoutes from './admin/routes';
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -41,6 +43,7 @@ app.get('/', (req, res) => {
   res.send('MCP Server is running.');
 });
 
+app.use('/api/admin', express.json(), adminRoutes);
 app.use('/webhooks', express.json(), webhookRoutes);
 
 // --- MCP SSE Transport Setup ---
