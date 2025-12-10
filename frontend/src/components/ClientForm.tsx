@@ -53,16 +53,16 @@ export function ClientForm({ initialData, onSubmit, isSubmitting = false }: Clie
     const [pendingValues, setPendingValues] = useState<ClientFormValues | null>(null);
     const [changesList, setChangesList] = useState<string[]>([]);
 
-    // Prepare default values: Clear sensitive fields if editing
+    // Prepare default values: Clear sensitive fields if editing for security
     const preparedDefaultValues = initialData ? {
         ...initialData,
         meta: {
             ...initialData.meta,
-            accessToken: '' // VISUAL SECURITY: Start empty on edit
+            accessToken: ''
         },
         wassenger: {
             ...initialData.wassenger,
-            apiKey: '' // VISUAL SECURITY: Start empty on edit
+            apiKey: ''
         }
     } : defaultValues;
 
@@ -156,7 +156,6 @@ export function ClientForm({ initialData, onSubmit, isSubmitting = false }: Clie
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(handlePreSubmit)} className="space-y-8 pb-10">
 
-                    {/* Section 1: General Information */}
                     <Card>
                         <CardHeader>
                             <CardTitle>General Information</CardTitle>
@@ -240,7 +239,6 @@ export function ClientForm({ initialData, onSubmit, isSubmitting = false }: Clie
                         </CardContent>
                     </Card>
 
-                    {/* Section 2: Integrations (Google, Meta, Wassenger) */}
                     <Card>
                         <CardHeader>
                             <CardTitle>Integrations & Credentials</CardTitle>
@@ -248,7 +246,6 @@ export function ClientForm({ initialData, onSubmit, isSubmitting = false }: Clie
                         </CardHeader>
                         <CardContent className="space-y-6">
 
-                            {/* Google Service Account */}
                             <div className="space-y-4">
                                 <h3 className="text-sm font-medium leading-none">
                                     Google Service Account
@@ -320,7 +317,8 @@ export function ClientForm({ initialData, onSubmit, isSubmitting = false }: Clie
 
                             <Separator />
 
-                            {/* Meta / Facebook */}
+                            <Separator />
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <FormField
                                     control={form.control}
@@ -363,7 +361,8 @@ export function ClientForm({ initialData, onSubmit, isSubmitting = false }: Clie
 
                             <Separator />
 
-                            {/* Wassenger */}
+                            <Separator />
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <FormField
                                     control={form.control}
@@ -406,7 +405,6 @@ export function ClientForm({ initialData, onSubmit, isSubmitting = false }: Clie
                         </CardContent>
                     </Card>
 
-                    {/* Section 3: Locations */}
                     <Card>
                         <CardHeader>
                             <CardTitle>Locations & Calendars</CardTitle>
@@ -423,8 +421,6 @@ export function ClientForm({ initialData, onSubmit, isSubmitting = false }: Clie
                                         size="icon"
                                         className="absolute top-2 right-2 text-red-500 hover:text-red-700 hover:bg-slate-100"
                                         onClick={() => remove(index)}
-                                    // Prevent removing the last item if validation requires min 1? 
-                                    // Zod handles submit validation, visual feedback is enough.
                                     >
                                         <TrashIcon className="h-4 w-4" />
                                     </Button>
@@ -522,10 +518,8 @@ export function ClientForm({ initialData, onSubmit, isSubmitting = false }: Clie
                                                             <Textarea
                                                                 placeholder="id1@group.calendar.google.com, id2@..."
                                                                 className="min-h-[80px] font-mono text-xs"
-                                                                // Handle both array (initial/saved) and string (editing)
                                                                 value={Array.isArray(field.value) ? field.value.join('\n') : (field.value || '')}
                                                                 onChange={(e) => {
-                                                                    // Let user type freely. Validation/Transformation happens on submit.
                                                                     field.onChange(e.target.value);
                                                                 }}
                                                             />
@@ -563,7 +557,6 @@ export function ClientForm({ initialData, onSubmit, isSubmitting = false }: Clie
                         </CardContent>
                     </Card>
 
-                    {/* Section 4: Templates */}
                     <Card>
                         <CardHeader>
                             <CardTitle>Reminder Templates</CardTitle>
@@ -628,7 +621,6 @@ export function ClientForm({ initialData, onSubmit, isSubmitting = false }: Clie
                         </CardContent>
                     </Card>
 
-                    {/* Submit Actions */}
                     <div className="sticky bottom-4 flex justify-end gap-4 p-4 bg-white/90 backdrop-blur border rounded-lg shadow-lg z-10">
                         <Button type="button" variant="outline" onClick={() => window.history.back()}>
                             Cancel

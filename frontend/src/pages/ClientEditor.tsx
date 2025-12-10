@@ -24,9 +24,6 @@ export default function ClientEditor() {
     const loadClient = async (clientId: string) => {
         try {
             const data = await clientService.getOne(clientId);
-            // Ensure data matches the shape expected by the form
-            // We might need to map some fields if backend structure differs slightly, 
-            // but assuming consistent schema for now.
             setInitialData(data);
         } catch (error) {
             console.error('Failed to load client:', error);
@@ -40,20 +37,13 @@ export default function ClientEditor() {
     const handleSubmit = async (values: ClientFormValues, serviceAccountFile?: File) => {
         setIsSubmitting(true);
         try {
-            // Handle Access Token Logic: 
-            // If empty, we assume no change is desired (don't overwrite with empty string).
-            if (!values.meta?.accessToken) {
-                // If nested object, we need to ensure we don't send empty string
-                if (values.meta) {
-                    values.meta.accessToken = undefined;
-                }
+            if (!values.meta?.accessToken && values.meta) {
+                values.meta.accessToken = undefined;
             }
 
             // Handle Wassenger Key Logic:
-            if (!values.wassenger?.apiKey) {
-                if (values.wassenger) {
-                    values.wassenger.apiKey = undefined;
-                }
+            if (!values.wassenger?.apiKey && values.wassenger) {
+                values.wassenger.apiKey = undefined;
             }
 
             let savedClient;
@@ -78,10 +68,6 @@ export default function ClientEditor() {
                             serviceAccountPath: uploadRes.path
                         };
 
-                        await clientService.update(clientId, {
-                            ...values,
-                            google: updatedGoogleConfig
-                        });
                         await clientService.update(clientId, {
                             ...values,
                             google: updatedGoogleConfig

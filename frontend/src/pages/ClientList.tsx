@@ -25,9 +25,6 @@ import { Plus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { clientService } from '@/services/api';
 
-// Since I didn't install Badge, I'll use a simple span or install it. 
-// Plan said "Button, Input, Card...". I missed Badge.
-// I'll simulate badge with Tailwind classes for now.
 
 interface Client {
     id: string;
@@ -67,7 +64,6 @@ export default function ClientList() {
                 limit,
                 search: searchQuery
             });
-            // data.data and data.meta
             setClients(response.data);
             const total = response.meta.total;
             setTotalPages(Math.ceil(total / limit));

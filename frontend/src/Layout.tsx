@@ -34,7 +34,7 @@ export default function Layout() {
                         Dental Admin
                     </h1>
                     <small>By EmyWeb Studio</small>
-                    <img src="../public/emyweblogo.png" alt="emyweblogo" className="mt-2 h-10" />
+                    <img src="/emyweblogo.png" alt="emyweblogo" className="mt-2 h-10" />
                 </div>
 
                 <nav className="flex-1 p-4 space-y-2">

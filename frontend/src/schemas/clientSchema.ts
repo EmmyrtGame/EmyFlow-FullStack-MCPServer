@@ -27,9 +27,6 @@ export const clientSchema = z.object({
     google: z.object({
         bookingCalendarId: z.string().min(1, 'Booking Calendar ID is required'),
         availabilityCalendars: z.string().min(1, 'One or more Calendar IDs required').or(z.array(z.string()).min(1)) 
-        // Note: Field might handle string (textarea) but submit array. Zod input might differ from output.
-        // Let's stick to array(string) and handle split in form. Or let Form handle it.
-        // Better: use array(string).
     })
   })).min(1, 'At least one location is required'),
   
