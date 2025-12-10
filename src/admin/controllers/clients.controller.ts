@@ -134,6 +134,11 @@ class ClientsController {
         dataToSave.wassenger.apiKey = encrypt(dataToSave.wassenger.apiKey);
       }
 
+      // Sync legacy 'location' field from the first item of 'locations'
+      if (dataToSave.locations && dataToSave.locations.length > 0) {
+        dataToSave.location = dataToSave.locations[0];
+      }
+
       const client = await prisma.client.create({
         data: dataToSave
       });
@@ -172,6 +177,11 @@ class ClientsController {
       }
       if (data.wassenger?.apiKey) {
         data.wassenger.apiKey = encrypt(data.wassenger.apiKey);
+      }
+
+      // Sync legacy 'location' field if locations are being updated
+      if (data.locations && data.locations.length > 0) {
+        data.location = data.locations[0];
       }
 
       const client = await prisma.client.update({

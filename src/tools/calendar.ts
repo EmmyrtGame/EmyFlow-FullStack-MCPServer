@@ -63,21 +63,26 @@ export const calendarCheckAvailability = async (args: { client_id: string; start
     throw new Error(`Client ${client_id} not found`);
   }
 
-  // Determine which calendars to check
-  let availabilityCalendars = clientConfig.google.availabilityCalendars;
+  // Determine availability calendars
+  // REFACTOR: No more global calendars. Must use location config.
+  let availabilityCalendars: string[] = [];
   
-  const strategy = clientConfig.availabilityStrategy || 'PER_LOCATION';
-
-  if (strategy === 'GLOBAL') {
-    availabilityCalendars = clientConfig.google.availabilityCalendars;
-  } else {
-    if (sede) {
-      if (clientConfig.locations && clientConfig.locations[sede]) {
-        availabilityCalendars = clientConfig.locations[sede].google.availabilityCalendars;
+  if (sede) {
+      // Find specific location by name
+      const loc = clientConfig.locations?.find(l => l.name === sede);
+      if (loc) {
+          availabilityCalendars = loc.google.availabilityCalendars;
       } else {
-         throw new Error(`Location (sede) '${sede}' not found for client ${client_id}`);
+          throw new Error(`Location (sede) '${sede}' not found in locations list for client ${client_id}`);
       }
-    }
+  } else {
+      // Fallback: Default to first location if no sede
+      if (clientConfig.locations && clientConfig.locations.length > 0) {
+          availabilityCalendars = clientConfig.locations[0].google.availabilityCalendars;
+          console.log(`No sede provided, checking availability on first location: ${clientConfig.locations[0].name}`);
+      } else {
+          throw new Error(`Client ${client_id} has no locations configured.`);
+      }
   }
 
   const auth = new google.auth.GoogleAuth({
@@ -222,31 +227,31 @@ export const calendarCreateAppointment = async (args: {
     throw new Error(`Client ${client_id} not found`);
   }
 
-  // Determine booking calendar
-  let availabilityCalendars = clientConfig.google.availabilityCalendars;
-  let bookingCalendarId = clientConfig.google.bookingCalendarId;
-  let locationConfig = null;
-  const strategy = clientConfig.availabilityStrategy || 'PER_LOCATION';
-
-  // 1. Resolve Location & Booking Calendar (Where the event lives)
+  // Determine availability calendars & booking config
+  // REFACTOR: Global strategy removed. Must use location config.
+  let availabilityCalendars: string[] = [];
+  let bookingCalendarId: string;
+  let locationConfig: any; // Using any for now to match the complex location type or strict typing
+  
   if (sede) {
-    if (clientConfig.locations && clientConfig.locations[sede]) {
-      // If we have a specific location, we default to its booking calendar
-      bookingCalendarId = clientConfig.locations[sede].google.bookingCalendarId;
-      locationConfig = clientConfig.locations[sede];
-      
-      // If Strategy is PER_LOCATION, we also scope usage check to this location
-      if (strategy === 'PER_LOCATION') {
-        availabilityCalendars = clientConfig.locations[sede].google.availabilityCalendars;
+      const loc = clientConfig.locations?.find(l => l.name === sede);
+      if (loc) {
+          availabilityCalendars = loc.google.availabilityCalendars;
+          bookingCalendarId = loc.google.bookingCalendarId;
+          locationConfig = loc;
+      } else {
+          throw new Error(`Location (sede) '${sede}' not found for client ${client_id}`);
       }
-    } else {
-      throw new Error(`Location (sede) '${sede}' not found for client ${client_id}`);
-    }
-  }
-
-  // 2. If Strategy is GLOBAL, override availabilityCalendars to top-level (shared resources)
-  if (strategy === 'GLOBAL') {
-    availabilityCalendars = clientConfig.google.availabilityCalendars;
+  } else {
+      // Fallback
+      if (clientConfig.locations && clientConfig.locations.length > 0) {
+          locationConfig = clientConfig.locations[0];
+          availabilityCalendars = locationConfig.google.availabilityCalendars;
+          bookingCalendarId = locationConfig.google.bookingCalendarId;
+          console.log(`No sede provided for booking, using first location: ${locationConfig.name}`);
+      } else {
+          throw new Error(`Client ${client_id} has no locations configured.`);
+      }
   }
 
   const auth = new google.auth.GoogleAuth({

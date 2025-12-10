@@ -3,9 +3,12 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './pages/Login';
 import Layout from './Layout';
 import ClientList from './pages/ClientList';
+import ClientEditor from './pages/ClientEditor';
 import { Toaster } from "@/components/ui/sonner"
 
-const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
+import { type ReactNode } from 'react';
+
+const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
@@ -32,6 +35,8 @@ export default function App() {
           }>
             <Route index element={<Navigate to="/clients" replace />} />
             <Route path="clients" element={<ClientList />} />
+            <Route path="clients/new" element={<ClientEditor />} />
+            <Route path="clients/:id" element={<ClientEditor />} />
             <Route path="dashboard" element={<div>Dashboard Overview (Coming Soon)</div>} />
             <Route path="settings" element={<div>Settings (Coming Soon)</div>} />
           </Route>

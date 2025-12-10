@@ -8,32 +8,28 @@ export const ConfigSchema = z.object({
   availabilityStrategy: z.enum(['GLOBAL', 'PER_LOCATION']).default('PER_LOCATION'),
   
   google: z.object({
-    serviceAccountPath: z.string().optional(), // Now managed via file upload, but path might be stored for reference or legacy
-    availabilityCalendars: z.array(z.string()).default([]),
-    bookingCalendarId: z.string().optional()
+    serviceAccountPath: z.string().optional(), // Handled by file upload, but we store path string from DB
   }),
   
   meta: z.object({
-    pixelId: z.string().optional(),
-    accessToken: z.string().optional()
+    pixelId: z.string().regex(/^\d+$/).optional(),
+    accessToken: z.string()
   }),
   
   wassenger: z.object({
-    apiKey: z.string().optional(),
-    deviceId: z.string().optional()
-  }),
-  
-  location: z.object({
-    address: z.string().optional(),
-    mapUrl: z.string().url().optional().or(z.literal(''))
+    apiKey: z.string(),
+    deviceId: z.string()
   }),
   
   locations: z.array(z.object({
-    name: z.string(),
-    calendars: z.array(z.string()),
+    name: z.string(), // Acts as 'sede' identifier
     address: z.string(),
-    mapUrl: z.string()
-  })).optional(),
+    mapUrl: z.string(),
+    google: z.object({
+      bookingCalendarId: z.string(),
+      availabilityCalendars: z.array(z.string())
+    })
+  })).min(1),
   
   reminderTemplates: z.record(z.string(), z.string()).optional()
 });

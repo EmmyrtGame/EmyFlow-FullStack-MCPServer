@@ -15,9 +15,8 @@ export interface DecryptedClientConfig {
   availabilityStrategy: 'GLOBAL' | 'PER_LOCATION';
   
   google: {
-    serviceAccountPath: string; // This will start as a path to a temp file
-    availabilityCalendars: string[];
-    bookingCalendarId: string;
+    serviceAccountPath?: string;
+    // Removed global calendars as per refactor
   };
   meta: {
     pixelId: string;
@@ -27,19 +26,13 @@ export interface DecryptedClientConfig {
     apiKey: string;
     deviceId: string;
   };
-  location: {
+  locations: Array<{
+    name: string;
     address: string;
     mapUrl: string;
-  };
-  locations?: Record<string, {
-    name: string;
     google: {
       availabilityCalendars: string[];
       bookingCalendarId: string;
-    };
-    location: {
-      address: string;
-      mapUrl: string;
     };
   }>;
   reminderTemplates: Record<string, string>;
@@ -123,9 +116,16 @@ class ClientService {
         serviceAccountPath: serviceAccountPath
       },
       meta: meta,
-      wassenger: wassenger,
-      location: client.location as any,
-      locations: client.locations as any,
+      wassenger: {
+        apiKey: wassenger?.apiKey,
+        deviceId: wassenger?.deviceId,
+      },
+      locations: client.locations ? (client.locations as any[]).map(loc => ({
+        name: loc.name,
+        address: loc.address,
+        mapUrl: loc.mapUrl,
+        google: loc.google
+      })) : [],
       reminderTemplates: client.reminderTemplates as any
     };
 

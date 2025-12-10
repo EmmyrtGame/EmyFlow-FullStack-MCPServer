@@ -53,8 +53,9 @@ export const scheduleAppointmentReminders = async (
     return;
   }
 
-  // Use provided locationConfig or fall back to clientConfig.location
-  const activeLocation = locationConfig?.location || clientConfig.location;
+  // Use provided locationConfig or fall back to first location
+  // Note: Global 'location' is removed, so we fallback to locations[0]
+  const activeLocation = locationConfig || (clientConfig.locations && clientConfig.locations.length > 0 ? clientConfig.locations[0] : null);
 
   const appointmentTime = new Date(appointmentTimeStr);
   const now = new Date();

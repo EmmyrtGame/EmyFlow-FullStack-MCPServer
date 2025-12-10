@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import {
     Table,
@@ -28,6 +29,7 @@ interface Client {
 }
 
 export default function ClientList() {
+    const navigate = useNavigate();
     const [clients, setClients] = useState<Client[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -60,7 +62,7 @@ export default function ClientList() {
                     <h1 className="text-3xl font-bold tracking-tight">Clients</h1>
                     <p className="text-gray-500 text-sm mt-1">Manage your dental clinic tenants</p>
                 </div>
-                <Button>
+                <Button onClick={() => navigate('/clients/new')}>
                     <Plus className="mr-2 h-4 w-4" />
                     Add Client
                 </Button>
@@ -116,7 +118,7 @@ export default function ClientList() {
                                         <TableCell>{client.timezone}</TableCell>
                                         <TableCell>{new Date(client.createdAt).toLocaleDateString()}</TableCell>
                                         <TableCell className="text-right">
-                                            <Button variant="ghost" size="sm">Edit</Button>
+                                            <Button variant="ghost" size="sm" onClick={() => navigate(`/clients/${client.id}`)}>Edit</Button>
                                         </TableCell>
                                     </TableRow>
                                 ))
