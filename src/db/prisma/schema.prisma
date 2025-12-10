@@ -28,13 +28,12 @@ model Client {
   google          Json  // { serviceAccountPath, availabilityCalendars, bookingCalendarId }
   meta            Json  // { pixelId, accessToken }
   wassenger       Json  // { apiKey, deviceId }
-  location        Json  // { address, mapUrl }
+  // Removed legacy location and availabilityStrategy fields
   locations       Json? // Múltiples sedes (opcional)
   reminderTemplates Json  // { "24h", "3h", "1h" }
   
   // Metadatos
   timezone              String  @default("America/Mexico_City")
-  availabilityStrategy  String  @default("PER_LOCATION") // GLOBAL | PER_LOCATION
 }
 
 model ServiceAccount {

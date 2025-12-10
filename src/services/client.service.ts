@@ -12,7 +12,6 @@ export interface DecryptedClientConfig {
   name: string;
   isActive: boolean;
   timezone: string;
-  availabilityStrategy: 'GLOBAL' | 'PER_LOCATION';
   
   google: {
     serviceAccountPath?: string;
@@ -110,7 +109,6 @@ class ClientService {
       name: client.name,
       isActive: client.isActive,
       timezone: client.timezone,
-      availabilityStrategy: (client.availabilityStrategy as any) || 'PER_LOCATION',
       google: {
         ...(client.google as any),
         serviceAccountPath: serviceAccountPath

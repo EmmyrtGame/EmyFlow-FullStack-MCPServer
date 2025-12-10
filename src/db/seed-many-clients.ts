@@ -11,13 +11,6 @@ async function main() {
     slug: `seed_test_${randomBytes(4).toString('hex')}`,
     isActive: Math.random() > 0.2, // 80% active
     timezone: 'America/Mexico_City',
-    availabilityStrategy: 'PER_LOCATION',
-    location: {
-         name: 'Main',
-         address: '123 Fake St',
-         mapUrl: 'http://maps.google.com',
-         google: { bookingCalendarId: 'cal_id', availabilityCalendars: ['cal_1'] }
-    },
     locations: [
         {
             name: 'center_1',

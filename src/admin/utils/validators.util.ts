@@ -5,7 +5,6 @@ export const ConfigSchema = z.object({
   name: z.string().min(1),
   isActive: z.boolean().default(true),
   timezone: z.string().default('America/Mexico_City'),
-  availabilityStrategy: z.enum(['GLOBAL', 'PER_LOCATION']).default('PER_LOCATION'),
   
   google: z.any(),
   
