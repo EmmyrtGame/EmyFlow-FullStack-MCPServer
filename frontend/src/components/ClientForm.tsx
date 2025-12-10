@@ -1,7 +1,20 @@
 import { useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { PlusIcon, TrashIcon, InfoCircledIcon } from '@radix-ui/react-icons';
+import {
+    User, MapPin, Calendar, Clock, Smartphone, Globe, Hash, Key, Layout
+} from 'lucide-react';
 import { zodResolver } from '@hookform/resolvers/zod';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { type ClientFormValues, clientSchema, defaultValues } from '../schemas/clientSchema';
 import { Button } from '@/components/ui/button';
 import {
@@ -36,9 +49,26 @@ export function ClientForm({ initialData, onSubmit, isSubmitting = false }: Clie
     const [credentialMode, setCredentialMode] = useState<'existing' | 'upload'>('upload');
     const [existingCredentials, setExistingCredentials] = useState<{ name: string, path: string }[]>([]);
 
+    const [showConfirm, setShowConfirm] = useState(false);
+    const [pendingValues, setPendingValues] = useState<ClientFormValues | null>(null);
+    const [changesList, setChangesList] = useState<string[]>([]);
+
+    // Prepare default values: Clear sensitive fields if editing
+    const preparedDefaultValues = initialData ? {
+        ...initialData,
+        meta: {
+            ...initialData.meta,
+            accessToken: '' // VISUAL SECURITY: Start empty on edit
+        },
+        wassenger: {
+            ...initialData.wassenger,
+            apiKey: '' // VISUAL SECURITY: Start empty on edit
+        }
+    } : defaultValues;
+
     const form = useForm<ClientFormValues>({
         resolver: zodResolver(clientSchema) as any,
-        defaultValues: initialData || defaultValues,
+        defaultValues: preparedDefaultValues,
     });
 
     // Load existing credentials on mount
@@ -56,8 +86,49 @@ export function ClientForm({ initialData, onSubmit, isSubmitting = false }: Clie
         name: "locations"
     });
 
-    const handleFormSubmit = async (values: ClientFormValues) => {
-        await onSubmit(values, serviceAccountFile || undefined);
+    const getChanges = (newValues: ClientFormValues) => {
+        const changes: string[] = [];
+        if (!initialData) return ["Creating new client configuration"];
+
+        if (newValues.name !== initialData.name) changes.push(`Name changed to: ${newValues.name}`);
+        if (newValues.slug !== initialData.slug) changes.push(`Slug changed to: ${newValues.slug}`);
+        if (newValues.isActive !== initialData.isActive) changes.push(`Active Status changed: ${newValues.isActive}`);
+
+        // Integrations
+        if (credentialMode !== 'existing' && serviceAccountFile) changes.push("Uploading new Service Account File");
+        if (credentialMode === 'existing' && newValues.google?.serviceAccountPath !== initialData.google?.serviceAccountPath) changes.push("Selected different Service Account");
+
+        if (newValues.meta?.pixelId !== initialData.meta?.pixelId) changes.push("Meta Pixel ID updated");
+        if (newValues.meta?.accessToken) changes.push("Meta Access Token updated"); // Only if provided
+
+        if (newValues.wassenger?.apiKey) changes.push("Wassenger API Key updated"); // Only if provided
+        if (newValues.wassenger?.deviceId !== initialData.wassenger?.deviceId) changes.push("Wassenger Device ID updated");
+
+        // Locations (Simple count check or deep check)
+        if (JSON.stringify(newValues.locations) !== JSON.stringify(initialData.locations)) {
+            changes.push("Locations configuration updated");
+        }
+
+        // Templates
+        if (JSON.stringify(newValues.reminderTemplates) !== JSON.stringify(initialData.reminderTemplates)) {
+            changes.push("Reminder Templates updated");
+        }
+
+        return changes.length > 0 ? changes : ["No significant changes detected"];
+    };
+
+    const handlePreSubmit = (values: ClientFormValues) => {
+        const changes = getChanges(values);
+        setChangesList(changes);
+        setPendingValues(values);
+        setShowConfirm(true);
+    };
+
+    const confirmSubmit = async () => {
+        if (pendingValues) {
+            await onSubmit(pendingValues, serviceAccountFile || undefined);
+            setShowConfirm(false);
+        }
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -67,450 +138,520 @@ export function ClientForm({ initialData, onSubmit, isSubmitting = false }: Clie
     };
 
     return (
-        <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-8 pb-10">
+        <>
+            <Form {...form}>
+                <form onSubmit={form.handleSubmit(handlePreSubmit)} className="space-y-8 pb-10">
 
-                {/* Section 1: General Information */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>General Information</CardTitle>
-                        <CardDescription>Basic client details and identifying information.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <FormField
-                            control={form.control}
-                            name="name"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Client Name</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="Dental Clinic Name" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Section 1: General Information */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>General Information</CardTitle>
+                            <CardDescription>Basic client details and identifying information.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
                             <FormField
                                 control={form.control}
-                                name="slug"
+                                name="name"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Slug (ID)</FormLabel>
+                                        <FormLabel>Client Name</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="clinic_name" {...field} />
-                                        </FormControl>
-                                        <FormDescription>Unique identifier for URLs and database.</FormDescription>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-
-                            <FormField
-                                control={form.control}
-                                name="timezone"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Timezone</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="America/Mexico_City" {...field} />
+                                            <div className="relative">
+                                                <User className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                                                <Input className="pl-9" placeholder="Dental Clinic Name" {...field} />
+                                            </div>
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
-                        </div>
 
-                        <FormField
-                            control={form.control}
-                            name="isActive"
-                            render={({ field }) => (
-                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                                    <div className="space-y-0.5">
-                                        <FormLabel className="text-base">Active Status</FormLabel>
-                                        <FormDescription>
-                                            Enable or disable all automated interactions for this client.
-                                        </FormDescription>
-                                    </div>
-                                    <FormControl>
-                                        <Switch
-                                            checked={field.value}
-                                            onCheckedChange={field.onChange}
-                                        />
-                                    </FormControl>
-                                </FormItem>
-                            )}
-                        />
-                    </CardContent>
-                </Card>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <FormField
+                                    control={form.control}
+                                    name="slug"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Slug (ID)</FormLabel>
+                                            <FormControl>
+                                                <div className="relative">
+                                                    <Hash className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                                                    <Input className="pl-9" placeholder="clinic_name" {...field} />
+                                                </div>
+                                            </FormControl>
+                                            <FormDescription>Unique identifier for URLs and database.</FormDescription>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
 
-                {/* Section 2: Integrations (Google, Meta, Wassenger) */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Integrations & Credentials</CardTitle>
-                        <CardDescription>Configure external service connections.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
+                                <FormField
+                                    control={form.control}
+                                    name="timezone"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Timezone</FormLabel>
+                                            <FormControl>
+                                                <div className="relative">
+                                                    <Clock className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                                                    <Input className="pl-9" placeholder="America/Mexico_City" {...field} />
+                                                </div>
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
 
-                        {/* Google Service Account */}
-                        <div className="space-y-4">
-                            <h3 className="text-sm font-medium leading-none">
-                                Google Service Account
-                            </h3>
-                            <div className="bg-slate-50 p-4 rounded-md border space-y-4">
-                                <RadioGroup
-                                    defaultValue={credentialMode}
-                                    onValueChange={(val) => setCredentialMode(val as any)}
-                                    className="flex flex-row gap-4"
-                                >
-                                    <div className="flex items-center space-x-2">
-                                        <RadioGroupItem value="existing" id="mode-existing" />
-                                        <Label htmlFor="mode-existing" className="font-normal cursor-pointer">Select Existing</Label>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                        <RadioGroupItem value="upload" id="mode-upload" />
-                                        <Label htmlFor="mode-upload" className="font-normal cursor-pointer">Upload New</Label>
-                                    </div>
-                                </RadioGroup>
-
-                                {credentialMode === 'existing' ? (
-                                    <FormField
-                                        control={form.control}
-                                        name="google.serviceAccountPath"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Select Credential File</FormLabel>
-                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                    <FormControl>
-                                                        <SelectTrigger>
-                                                            <SelectValue placeholder="Select a JSON file" />
-                                                        </SelectTrigger>
-                                                    </FormControl>
-                                                    <SelectContent>
-                                                        {existingCredentials.map((cred) => (
-                                                            <SelectItem key={cred.path} value={cred.path}>
-                                                                {cred.name}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                ) : (
-                                    <div className="space-y-2">
-                                        <Label>Upload JSON Key</Label>
-                                        <div className="flex items-center gap-4">
-                                            <Input
-                                                type="file"
-                                                accept=".json"
-                                                onChange={handleFileChange}
-                                                className="max-w-md bg-white"
-                                            />
-                                            {initialData?.google?.serviceAccountPath && !serviceAccountFile && (
-                                                <span className="text-sm text-green-600 font-medium">
-                                                    ✓ Configured: {initialData.google.serviceAccountPath.split('/').pop()}
-                                                </span>
-                                            )}
+                            <FormField
+                                control={form.control}
+                                name="isActive"
+                                render={({ field }) => (
+                                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                        <div className="space-y-0.5">
+                                            <FormLabel className="text-base">Active Status</FormLabel>
+                                            <FormDescription>
+                                                Enable or disable all automated interactions for this client.
+                                            </FormDescription>
                                         </div>
-                                        <p className="text-[0.8rem] text-muted-foreground">
-                                            This will upload and encrypt a new service account file.
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        <Separator />
-
-                        {/* Meta / Facebook */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <FormField
-                                control={form.control}
-                                name="meta.pixelId"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Meta Pixel ID</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="1234567890" {...field} />
+                                            <Switch
+                                                checked={field.value}
+                                                onCheckedChange={field.onChange}
+                                            />
                                         </FormControl>
-                                        <FormMessage />
                                     </FormItem>
                                 )}
                             />
-                            <FormField
-                                control={form.control}
-                                name="meta.accessToken"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Conversion API Access Token</FormLabel>
-                                        <FormControl>
-                                            <Input type="password" placeholder="EAAB..." className="font-mono text-xs" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
+                        </CardContent>
+                    </Card>
 
-                        <Separator />
+                    {/* Section 2: Integrations (Google, Meta, Wassenger) */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Integrations & Credentials</CardTitle>
+                            <CardDescription>Configure external service connections.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
 
-                        {/* Wassenger */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <FormField
-                                control={form.control}
-                                name="wassenger.apiKey"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Wassenger API Key</FormLabel>
-                                        <FormControl>
-                                            <Input type="password" placeholder="Key..." className="font-mono text-xs" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="wassenger.deviceId"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Wassenger Device ID</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="Device ID" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-                    </CardContent>
-                </Card>
+                            {/* Google Service Account */}
+                            <div className="space-y-4">
+                                <h3 className="text-sm font-medium leading-none">
+                                    Google Service Account
+                                </h3>
+                                <div className="bg-slate-50 p-4 rounded-md border space-y-4">
+                                    <RadioGroup
+                                        value={credentialMode}
+                                        onValueChange={(val) => setCredentialMode(val as any)}
+                                        className="flex flex-row gap-4"
+                                    >
+                                        <div className="flex items-center space-x-2">
+                                            <RadioGroupItem value="existing" id="mode-existing" />
+                                            <Label htmlFor="mode-existing" className="font-normal cursor-pointer">Select Existing</Label>
+                                        </div>
+                                        <div className="flex items-center space-x-2">
+                                            <RadioGroupItem value="upload" id="mode-upload" />
+                                            <Label htmlFor="mode-upload" className="font-normal cursor-pointer">Upload New</Label>
+                                        </div>
+                                    </RadioGroup>
 
-                {/* Section 3: Locations */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Locations & Calendars</CardTitle>
-                        <CardDescription>
-                            Configure at least one location. Availability checks are performed per-location.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        {fields.map((field, index) => (
-                            <div key={field.id} className="border p-4 rounded-md space-y-4 bg-slate-50 relative">
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="icon"
-                                    className="absolute top-2 right-2 text-red-500 hover:text-red-700 hover:bg-slate-100"
-                                    onClick={() => remove(index)}
-                                // Prevent removing the last item if validation requires min 1? 
-                                // Zod handles submit validation, visual feedback is enough.
-                                >
-                                    <TrashIcon className="h-4 w-4" />
-                                </Button>
-
-                                <div className="flex items-center gap-2 mb-2">
-                                    <span className="bg-primary/10 text-primary text-xs font-bold px-2 py-1 rounded">
-                                        Location #{index + 1}
-                                    </span>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <FormField
-                                        control={form.control}
-                                        name={`locations.${index}.name`}
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Sede Identifier</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="center_1" {...field} />
-                                                </FormControl>
-                                                <FormDescription className="text-xs">Internal ID (no spaces)</FormDescription>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name={`locations.${index}.address`}
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Address</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="123 Street..." {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name={`locations.${index}.mapUrl`}
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Map URL</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="https://maps..." {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
-
-                                <Separator className="my-2 bg-slate-200" />
-
-                                <div className="bg-white p-3 rounded border border-slate-100">
-                                    <h5 className="text-xs font-semibold text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-2">
-                                        <InfoCircledIcon /> Google Calendar Configuration
-                                    </h5>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {credentialMode === 'existing' ? (
                                         <FormField
                                             control={form.control}
-                                            name={`locations.${index}.google.bookingCalendarId`}
+                                            name="google.serviceAccountPath"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel>Booking Calendar ID</FormLabel>
-                                                    <FormControl>
-                                                        <Input placeholder="c_xxxxxxxx..." className="font-mono text-xs" {...field} />
-                                                    </FormControl>
-                                                    <FormDescription className="text-xs">Appointments are created here.</FormDescription>
+                                                    <FormLabel>Select Credential File</FormLabel>
+                                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                        <FormControl>
+                                                            <SelectTrigger>
+                                                                <SelectValue placeholder="Select a JSON file" />
+                                                            </SelectTrigger>
+                                                        </FormControl>
+                                                        <SelectContent>
+                                                            {existingCredentials.map((cred) => (
+                                                                <SelectItem key={cred.path} value={cred.path}>
+                                                                    {cred.name}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
                                                     <FormMessage />
                                                 </FormItem>
                                             )}
                                         />
+                                    ) : (
+                                        <div className="space-y-2">
+                                            <Label>Upload JSON Key</Label>
+                                            <div className="flex items-center gap-4">
+                                                <Input
+                                                    type="file"
+                                                    accept=".json"
+                                                    onChange={handleFileChange}
+                                                    className="max-w-md bg-white"
+                                                />
+                                                {initialData?.google?.serviceAccountPath && !serviceAccountFile && (
+                                                    <span className="text-sm text-green-600 font-medium">
+                                                        ✓ Configured: {initialData.google.serviceAccountPath.split('/').pop()}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <p className="text-[0.8rem] text-muted-foreground">
+                                                This will upload and encrypt a new service account file.
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
 
+                            <Separator />
+
+                            {/* Meta / Facebook */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <FormField
+                                    control={form.control}
+                                    name="meta.pixelId"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Meta Pixel ID</FormLabel>
+                                            <FormControl>
+                                                <div className="relative">
+                                                    <Layout className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                                                    <Input className="pl-9" placeholder="1234567890" {...field} />
+                                                </div>
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="meta.accessToken"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Conversion API Access Token</FormLabel>
+                                            <FormControl>
+                                                <div className="relative">
+                                                    <Key className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                                                    <Input
+                                                        className="pl-9 font-mono text-xs"
+                                                        type="password"
+                                                        placeholder={initialData?.meta?.accessToken ? "Saved (Enter new to update)" : "EAAB..."}
+                                                        {...field}
+                                                    />
+                                                </div>
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+
+                            <Separator />
+
+                            {/* Wassenger */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <FormField
+                                    control={form.control}
+                                    name="wassenger.apiKey"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Wassenger API Key</FormLabel>
+                                            <FormControl>
+                                                <div className="relative">
+                                                    <Key className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                                                    <Input
+                                                        className="pl-9 font-mono text-xs"
+                                                        type="password"
+                                                        placeholder={initialData?.wassenger?.apiKey ? "Saved (Enter new to update)" : "Key..."}
+                                                        {...field}
+                                                    />
+                                                </div>
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="wassenger.deviceId"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Wassenger Device ID</FormLabel>
+                                            <FormControl>
+                                                <div className="relative">
+                                                    <Smartphone className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                                                    <Input className="pl-9" placeholder="Device ID" {...field} />
+                                                </div>
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Section 3: Locations */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Locations & Calendars</CardTitle>
+                            <CardDescription>
+                                Configure at least one location. Availability checks are performed per-location.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            {fields.map((field, index) => (
+                                <div key={field.id} className="border p-4 rounded-md space-y-4 bg-slate-50 relative">
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        className="absolute top-2 right-2 text-red-500 hover:text-red-700 hover:bg-slate-100"
+                                        onClick={() => remove(index)}
+                                    // Prevent removing the last item if validation requires min 1? 
+                                    // Zod handles submit validation, visual feedback is enough.
+                                    >
+                                        <TrashIcon className="h-4 w-4" />
+                                    </Button>
+
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <span className="bg-primary/10 text-primary text-xs font-bold px-2 py-1 rounded">
+                                            Location #{index + 1}
+                                        </span>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         <FormField
                                             control={form.control}
-                                            name={`locations.${index}.google.availabilityCalendars`}
+                                            name={`locations.${index}.name`}
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel>Availability Calendars</FormLabel>
+                                                    <FormLabel>Sede Identifier</FormLabel>
                                                     <FormControl>
-                                                        <Textarea
-                                                            placeholder="id1@group.calendar.google.com, id2@..."
-                                                            className="min-h-[80px] font-mono text-xs"
-                                                            value={Array.isArray(field.value) ? field.value.join('\n') : (field.value || '')}
-                                                            onChange={(e) => {
-                                                                // Convert newline/comma text to array of strings
-                                                                const val = e.target.value;
-                                                                // We update the field value as array
-                                                                const arr = val.split(/[\n,]/).map(s => s.trim()).filter(Boolean);
-                                                                field.onChange(arr);
-                                                            }}
-                                                        />
+                                                        <div className="relative">
+                                                            <MapPin className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                                                            <Input className="pl-9" placeholder="center_1" {...field} />
+                                                        </div>
                                                     </FormControl>
-                                                    <FormDescription className="text-xs">
-                                                        One ID per line. Checked for conflicts.
-                                                    </FormDescription>
+                                                    <FormDescription className="text-xs">Internal ID (no spaces)</FormDescription>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={form.control}
+                                            name={`locations.${index}.address`}
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Address</FormLabel>
+                                                    <FormControl>
+                                                        <div className="relative">
+                                                            <MapPin className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                                                            <Input className="pl-9" placeholder="123 Street..." {...field} />
+                                                        </div>
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={form.control}
+                                            name={`locations.${index}.mapUrl`}
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Map URL</FormLabel>
+                                                    <FormControl>
+                                                        <div className="relative">
+                                                            <Globe className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                                                            <Input className="pl-9" placeholder="https://maps..." {...field} />
+                                                        </div>
+                                                    </FormControl>
                                                     <FormMessage />
                                                 </FormItem>
                                             )}
                                         />
                                     </div>
-                                </div>
-                            </div>
-                        ))}
 
-                        <Button
-                            type="button"
-                            variant="outline"
-                            className="w-full border-dashed py-6"
-                            onClick={() => append({
-                                name: '',
-                                address: '',
-                                mapUrl: '',
-                                google: { bookingCalendarId: '', availabilityCalendars: [] }
-                            })}
-                        >
-                            <PlusIcon className="mr-2 h-4 w-4" /> Add Location (Sede)
+                                    <Separator className="my-2 bg-slate-200" />
+
+                                    <div className="bg-white p-3 rounded border border-slate-100">
+                                        <h5 className="text-xs font-semibold text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                            <InfoCircledIcon /> Google Calendar Configuration
+                                        </h5>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <FormField
+                                                control={form.control}
+                                                name={`locations.${index}.google.bookingCalendarId`}
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>Booking Calendar ID</FormLabel>
+                                                        <FormControl>
+                                                            <div className="relative">
+                                                                <Calendar className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                                                                <Input className="pl-9 font-mono text-xs" placeholder="c_xxxxxxxx..." {...field} />
+                                                            </div>
+                                                        </FormControl>
+                                                        <FormDescription className="text-xs">Appointments are created here.</FormDescription>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+
+                                            <FormField
+                                                control={form.control}
+                                                name={`locations.${index}.google.availabilityCalendars`}
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>Availability Calendars</FormLabel>
+                                                        <FormControl>
+                                                            <Textarea
+                                                                placeholder="id1@group.calendar.google.com, id2@..."
+                                                                className="min-h-[80px] font-mono text-xs"
+                                                                value={Array.isArray(field.value) ? field.value.join('\n') : (field.value || '')}
+                                                                onChange={(e) => {
+                                                                    // Convert newline/comma text to array of strings
+                                                                    const val = e.target.value;
+                                                                    // We update the field value as array
+                                                                    const arr = val.split(/[\n,]/).map(s => s.trim()).filter(Boolean);
+                                                                    field.onChange(arr);
+                                                                }}
+                                                            />
+                                                        </FormControl>
+                                                        <FormDescription className="text-xs">
+                                                            One ID per line. Checked for conflicts.
+                                                        </FormDescription>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="w-full border-dashed py-6"
+                                onClick={() => append({
+                                    name: '',
+                                    address: '',
+                                    mapUrl: '',
+                                    google: { bookingCalendarId: '', availabilityCalendars: [] }
+                                })}
+                            >
+                                <PlusIcon className="mr-2 h-4 w-4" /> Add Location (Sede)
+                            </Button>
+                            {form.formState.errors.locations && (
+                                <p className="text-sm font-medium text-destructive">
+                                    {form.formState.errors.locations.message}
+                                </p>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    {/* Section 4: Templates */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Reminder Templates</CardTitle>
+                            <CardDescription>Customize the messages sent to patients.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+
+                            <Alert className="bg-blue-50 border-blue-200">
+                                <InfoCircledIcon className="h-4 w-4 text-blue-600" />
+                                <AlertTitle className="text-blue-800">Available Variables</AlertTitle>
+                                <AlertDescription className="text-blue-700 text-xs mt-1">
+                                    <strong>{"{{patient_name}}"}</strong>: Name of the patient<br />
+                                    <strong>{"{{time}}"}</strong>: Appointment time (e.g., 10:30 AM)<br />
+                                    <strong>{"{{date}}"}</strong>: Appointment date (e.g., Nov 25)<br />
+                                    <strong>{"{{location_name}}"}</strong>: Name/Sede of the location<br />
+                                    <strong>{"{{location_address}}"}</strong>: Address of the location<br />
+                                    <strong>{"{{location_map}}"}</strong>: Google Maps URL
+                                </AlertDescription>
+                            </Alert>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <FormField
+                                    control={form.control}
+                                    name="reminderTemplates.24h"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>24 Hours Before</FormLabel>
+                                            <FormControl>
+                                                <Textarea className="min-h-[120px]" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="reminderTemplates.3h"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>3 Hours Before</FormLabel>
+                                            <FormControl>
+                                                <Textarea className="min-h-[120px]" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="reminderTemplates.1h"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>1 Hour Before</FormLabel>
+                                            <FormControl>
+                                                <Textarea className="min-h-[120px]" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Submit Actions */}
+                    <div className="sticky bottom-4 flex justify-end gap-4 p-4 bg-white/90 backdrop-blur border rounded-lg shadow-lg z-10">
+                        <Button type="button" variant="outline" onClick={() => window.history.back()}>
+                            Cancel
                         </Button>
-                        {form.formState.errors.locations && (
-                            <p className="text-sm font-medium text-destructive">
-                                {form.formState.errors.locations.message}
-                            </p>
-                        )}
-                    </CardContent>
-                </Card>
+                        <Button type="submit" disabled={isSubmitting}>
+                            {isSubmitting ? 'Saving...' : 'Save Client Configuration'}
+                        </Button>
+                    </div>
+                </form>
+            </Form>
 
-                {/* Section 4: Templates */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Reminder Templates</CardTitle>
-                        <CardDescription>Customize the messages sent to patients.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
+            <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Confirm Changes</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            The following changes will be applied:
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
 
-                        <Alert className="bg-blue-50 border-blue-200">
-                            <InfoCircledIcon className="h-4 w-4 text-blue-600" />
-                            <AlertTitle className="text-blue-800">Available Variables</AlertTitle>
-                            <AlertDescription className="text-blue-700 text-xs mt-1">
-                                <strong>{"{{patient_name}}"}</strong>: Name of the patient<br />
-                                <strong>{"{{time}}"}</strong>: Appointment time (e.g., 10:30 AM)<br />
-                                <strong>{"{{date}}"}</strong>: Appointment date (e.g., Nov 25)<br />
-                                <strong>{"{{location_name}}"}</strong>: Name/Sede of the location<br />
-                                <strong>{"{{location_address}}"}</strong>: Address of the location<br />
-                                <strong>{"{{location_map}}"}</strong>: Google Maps URL
-                            </AlertDescription>
-                        </Alert>
+                    <div className="py-4">
+                        <ul className="list-disc pl-4 space-y-1 text-sm text-slate-700">
+                            {changesList.map((change, i) => (
+                                <li key={i}>{change}</li>
+                            ))}
+                        </ul>
+                    </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <FormField
-                                control={form.control}
-                                name="reminderTemplates.24h"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>24 Hours Before</FormLabel>
-                                        <FormControl>
-                                            <Textarea className="min-h-[120px]" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="reminderTemplates.3h"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>3 Hours Before</FormLabel>
-                                        <FormControl>
-                                            <Textarea className="min-h-[120px]" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="reminderTemplates.1h"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>1 Hour Before</FormLabel>
-                                        <FormControl>
-                                            <Textarea className="min-h-[120px]" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-                    </CardContent>
-                </Card>
-
-                {/* Submit Actions */}
-                <div className="sticky bottom-4 flex justify-end gap-4 p-4 bg-white/90 backdrop-blur border rounded-lg shadow-lg z-10">
-                    <Button type="button" variant="outline" onClick={() => window.history.back()}>
-                        Cancel
-                    </Button>
-                    <Button type="submit" disabled={isSubmitting}>
-                        {isSubmitting ? 'Saving...' : 'Save Client Configuration'}
-                    </Button>
-                </div>
-            </form>
-        </Form>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={confirmSubmit}>Confirm & Save</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        </>
     );
 }
+

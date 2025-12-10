@@ -40,6 +40,22 @@ export default function ClientEditor() {
     const handleSubmit = async (values: ClientFormValues, serviceAccountFile?: File) => {
         setIsSubmitting(true);
         try {
+            // Handle Access Token Logic: 
+            // If empty, we assume no change is desired (don't overwrite with empty string).
+            if (!values.meta?.accessToken) {
+                // If nested object, we need to ensure we don't send empty string
+                if (values.meta) {
+                    values.meta.accessToken = undefined;
+                }
+            }
+
+            // Handle Wassenger Key Logic:
+            if (!values.wassenger?.apiKey) {
+                if (values.wassenger) {
+                    values.wassenger.apiKey = undefined;
+                }
+            }
+
             let savedClient;
             if (isEditMode && id) {
                 savedClient = await clientService.update(id, values);
@@ -55,8 +71,6 @@ export default function ClientEditor() {
             if (serviceAccountFile && clientId) {
                 try {
                     const uploadRes = await clientService.uploadServiceAccount(clientId, serviceAccountFile);
-                    toast.success('Service Account uploaded');
-
                     // CRITICAL: Update the client with the NEW path returned by upload
                     if (uploadRes.path) {
                         const updatedGoogleConfig = {
@@ -68,7 +82,10 @@ export default function ClientEditor() {
                             ...values,
                             google: updatedGoogleConfig
                         });
-                        toast.success('Service Account path saved');
+                        await clientService.update(clientId, {
+                            ...values,
+                            google: updatedGoogleConfig
+                        });
                     }
 
                 } catch (uploadError) {

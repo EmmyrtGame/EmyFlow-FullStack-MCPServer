@@ -13,11 +13,11 @@ export const clientSchema = z.object({
   
   meta: z.object({
     pixelId: z.string().regex(/^\d+$/, 'Pixel ID must be numeric').optional().or(z.literal('')),
-    accessToken: z.string().min(1, 'Access Token is required'),
+    accessToken: z.string().optional(),
   }),
   
   wassenger: z.object({
-    apiKey: z.string().min(1, 'API Key is required'),
+    apiKey: z.string().optional(),
     deviceId: z.string().min(1, 'Device ID is required'),
   }),
   

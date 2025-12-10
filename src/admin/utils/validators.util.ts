@@ -11,11 +11,11 @@ export const ConfigSchema = z.object({
   
   meta: z.object({
     pixelId: z.string().regex(/^\d+$/).optional(),
-    accessToken: z.string()
+    accessToken: z.string().optional()
   }),
   
   wassenger: z.object({
-    apiKey: z.string(),
+    apiKey: z.string().optional(),
     deviceId: z.string()
   }),
   
