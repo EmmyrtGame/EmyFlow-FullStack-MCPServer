@@ -75,28 +75,9 @@ class ClientsController {
         return res.status(404).json({ message: 'Client not found' });
       }
 
-      // Decrypt sensitive tokens for display? 
-      // Usually we return masked or keep them encrypted until needed by the system.
-      // For Admin UI editing, we generally might need them or empty + "Change" button.
-      // For V1, we return as is (they are JSON stored in DB, some inner fields are tokens).
-      // But wait, the schema doesn't encrypt fields inside the JSON, only the ServiceAccount *file* content is encrypted in a separate table.
-      // The JSON fields like `meta.accessToken` are stored in plain text in the JSON column according to current design 
-      // (Requirement 7.2 mentions Service Accounts and tokens cifrado AES-256-GCM, but schema only has EncryptedContent for ServiceAccount file).
-      // Let's check requirements 6.3 - Access Token (text, tipo password con botón "Mostrar").
-      // If we want to encrypt individual fields in the JSON, we need to handle that. 
-      // The requirement says: "Service Accounts y tokens: Cifrado AES-256-GCM".
-      // So we SHOULD encrypt tokens before saving and decrypt when reading for "Show".
-      
-      // Let's implement decryption for specific fields if they appear encrypted (e.g. start with IV:)
-      // Or simply handle it client-side? No, must be server-side.
-      
-      // For this step, I will stick to basic CRUD. 
-      // If I encrypt them on save, I decrypt them here.
+      // Decrypt sensitive tokens for display if necessary
       
       const clientData = client as any;
-      
-      // Example decryption if we implement it on save:
-      // if (clientData.meta?.accessToken) clientData.meta.accessToken = decrypt(clientData.meta.accessToken);
       // if (clientData.meta?.accessToken) clientData.meta.accessToken = decrypt(clientData.meta.accessToken);
       // if (clientData.wassenger?.apiKey) clientData.wassenger.apiKey = decrypt(clientData.wassenger.apiKey);
  
@@ -126,10 +107,8 @@ class ClientsController {
       
       // Encrypt sensitive fields
       // NOTE: We'll modify the data object before saving
-      // Cast to any to allow modification if types are strict
       const dataToSave = { ...data } as any;
       
-      // Remove google field as it is no longer in DB schema
       delete dataToSave.google;
 
       if (dataToSave.meta?.accessToken) {
@@ -190,7 +169,6 @@ class ClientsController {
       // Merge JSON fields manually as Prisma replaces them
       const updatedData = { ...data };
       
-      // Google field removed from schema
       delete updatedData.google;
 
       if (data.meta) {

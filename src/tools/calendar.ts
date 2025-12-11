@@ -64,7 +64,6 @@ export const calendarCheckAvailability = async (args: { client_id: string; start
   }
 
   // Determine availability calendars
-  // REFACTOR: No more global calendars. Must use location config.
   let availabilityCalendars: string[] = [];
   
   if (sede) {
@@ -93,8 +92,6 @@ export const calendarCheckAvailability = async (args: { client_id: string; start
   if (clientConfig.google.credentials) {
     authConfig.credentials = clientConfig.google.credentials;
   } else {
-    // Legacy fallback removed.
-    // authConfig.keyFile = clientConfig.google.serviceAccountPath;
     console.warn(`Client ${client_id} missing Google Service Account Credentials in DB`);
   }
 
@@ -238,7 +235,6 @@ export const calendarCreateAppointment = async (args: {
   }
 
   // Determine availability calendars & booking config
-  // REFACTOR: Global strategy removed. Must use location config.
   let availabilityCalendars: string[] = [];
   let bookingCalendarId: string;
   let locationConfig: any; // Using any for now to match the complex location type or strict typing
@@ -272,8 +268,6 @@ export const calendarCreateAppointment = async (args: {
   if (clientConfig.google.credentials) {
     authConfig.credentials = clientConfig.google.credentials;
   } else {
-    // Legacy fallback removed.
-    // authConfig.keyFile = clientConfig.google.serviceAccountPath;
     console.warn(`Client ${client_id} missing Google Service Account Credentials in DB`);
   }
 

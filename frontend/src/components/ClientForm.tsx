@@ -77,7 +77,7 @@ export function ClientForm({ initialData, onSubmit, isSubmitting = false }: Clie
         clientService.getCredentials().then((data: Array<{ id: string, name: string, path: string }>) => {
             setExistingCredentials(data);
 
-            // Check if client has a linked service account ID (from backend relation)
+            // Check if client has a linked service account ID
             const serviceAccountId = (initialData as any)?.serviceAccountId;
 
             if (serviceAccountId) {
@@ -95,7 +95,6 @@ export function ClientForm({ initialData, onSubmit, isSubmitting = false }: Clie
                     });
                 }
             } else if (initialData?.google?.serviceAccountPath) {
-                // Fallback (legacy)
                 setCredentialMode('existing');
             }
         }).catch((err: any) => console.error("Failed to load credentials", err));

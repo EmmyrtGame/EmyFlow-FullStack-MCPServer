@@ -15,8 +15,7 @@ export interface DecryptedClientConfig {
   
   google: {
     serviceAccountPath?: string;
-    credentials?: any; // Encrypted JSON content from DB
-    // Removed global calendars as per refactor
+    credentials?: any; // Encrypted JSON content
   };
   meta: {
     pixelId: string;
@@ -42,8 +41,6 @@ export interface DecryptedClientConfig {
 class ClientService {
   
   private configCache: Map<string, DecryptedClientConfig> = new Map();
-  // We could implement cache expiration, but for now simple in-memory cache per process is okay.
-  // Note: If configs change in DB, this cache needs invalidation. For v1, restarts or manual invalidation is assumed.
 
   async getClientConfig(slug: string): Promise<DecryptedClientConfig | null> {
     // Check cache first
@@ -76,7 +73,7 @@ class ClientService {
       }
     }
 
-    // Handle Service Account (DB First)
+    // Handle Service Account
     let credentials = null;
 
     if (client.serviceAccountId) {
@@ -92,8 +89,7 @@ class ClientService {
     }
 
 
-    // Construct Google Config strictly from DB Relations (ServiceAccount)
-    // The 'google' column has been removed from DB.
+    // Construct Google Config from ServiceAccount relation
     
     const config: DecryptedClientConfig = {
       slug: client.slug,
@@ -123,13 +119,7 @@ class ClientService {
   }
 
   async getClientByDeviceId(deviceId: string): Promise<DecryptedClientConfig | null> {
-    // Inefficient scan for V1, but works with JSON columns in MySQL specific queries or in-memory
-    // Since we can't easily query inside JSON in generic way without native JSON types support in Prisma schema for filter
-    // (Prisma 5 + MySQL supports JSON filtering but we defined it as Json type in schema now, so we could try)
-    // However, to keep it robust and since client count is low, let's fetch all active.
-    
-    // Attempt specific query if possible, otherwise list all.
-    // Let's list all active clients and check.
+    // List all active clients and find match
     const clients = await prisma.client.findMany({
       where: { isActive: true }
     });

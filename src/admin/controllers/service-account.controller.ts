@@ -34,8 +34,6 @@ class ServiceAccountController {
       const encryptedContent = encrypt(fileContent);
 
       // Save to Global ServiceAccount Table
-      // Use client_email as unique identifier for the service account, or project_id if email absent (but email checked above)
-      // Name = client_email to ensure uniqueness roughly mapping to the SA itself
       const saName = parsedCreds.client_email;
 
       const serviceAccount = await prisma.serviceAccount.upsert({
@@ -65,7 +63,6 @@ class ServiceAccountController {
       if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
 
       // Return response formatted for Frontend "path" input
-      // We return a virtual path like "db://email" or similar so the user sees something.
       const virtualPath = `db://${serviceAccount.email}`;
 
       res.status(201).json({
