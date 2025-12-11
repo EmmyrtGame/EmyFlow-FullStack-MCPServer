@@ -171,8 +171,14 @@ const startServer = async () => {
       console.log(`Express server running on port ${PORT}`);
       logToMemory(`Express server running on port ${PORT}`);
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to start server:', error);
+    try {
+        const fs = require('fs');
+        fs.appendFileSync('startup_error.log', `[${new Date().toISOString()}] Startup Error: ${error.stack || error}\n`);
+    } catch (e) {
+        console.error('Failed to write error log:', e);
+    }
     process.exit(1);
   }
 };
