@@ -39,9 +39,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get('/', (req, res) => {
-  res.send('MCP Server is running.');
-});
+
 
 app.use('/api/admin', express.json(), adminRoutes);
 app.use('/api/admin', express.json(), adminRoutes);
