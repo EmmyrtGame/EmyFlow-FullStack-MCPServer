@@ -5,7 +5,8 @@ import {
     Users,
     LayoutDashboard,
     Settings,
-    LogOut
+    LogOut,
+    UserCog
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
@@ -22,6 +23,7 @@ export default function Layout() {
     const navItems = [
         { href: '/', label: 'Overview', icon: LayoutDashboard },
         { href: '/clients', label: 'Clients', icon: Users },
+        { href: '/users', label: 'Users', icon: UserCog },
         { href: '/settings', label: 'Settings', icon: Settings },
     ];
 

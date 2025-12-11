@@ -49,4 +49,10 @@ export const clientService = {
   getCredentials: () => api.get('/credentials').then(res => res.data)
 };
 
+export const userService = {
+  getAll: () => api.get('/users').then(res => res.data),
+  create: (data: any) => api.post('/users', data).then(res => res.data),
+  delete: (id: string) => api.delete(`/users/${id}`).then(res => res.data)
+};
+
 export default api;
