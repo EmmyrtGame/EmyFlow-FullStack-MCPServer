@@ -118,6 +118,10 @@ class ClientsController {
         dataToSave.wassenger.apiKey = encrypt(dataToSave.wassenger.apiKey);
       }
 
+      // Sync Wassenger Device ID to column for O(1) lookups
+      if (data.wassenger?.deviceId) {
+        dataToSave.wassengerDeviceId = data.wassenger.deviceId;
+      }
 
       const client = await prisma.client.create({
         data: dataToSave
@@ -176,6 +180,12 @@ class ClientsController {
       }
       if (data.wassenger) {
         updatedData.wassenger = { ...(existingClient.wassenger as object || {}), ...data.wassenger };
+        
+        // Sync Wassenger Device ID to column if it's being updated
+        const newDeviceId = (data.wassenger as any).deviceId;
+        if (newDeviceId) {
+           updatedData.wassengerDeviceId = newDeviceId;
+        }
       }
       if (data.reminderTemplates) {
         updatedData.reminderTemplates = { ...(existingClient.reminderTemplates as object || {}), ...data.reminderTemplates };
