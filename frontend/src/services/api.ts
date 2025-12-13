@@ -50,7 +50,8 @@ export const clientService = {
 };
 
 export const analyticsService = {
-  getStats: (clientId: string) => api.get(`/clients/${clientId}/analytics`).then(res => res.data),
+  getStats: (clientId: string, params?: { startDate?: string; endDate?: string }) => 
+    api.get(`/clients/${clientId}/analytics`, { params }).then(res => res.data),
   getEvents: (clientId: string, params?: any) => api.get(`/clients/${clientId}/events`, { params }).then(res => res.data),
 };
 

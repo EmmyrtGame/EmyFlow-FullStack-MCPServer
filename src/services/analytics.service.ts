@@ -257,6 +257,141 @@ class AnalyticsService {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   }
+
+  /**
+   * Gets stats aggregated from events within a date range.
+   * More flexible than cached stats for custom date filtering.
+   */
+  async getStatsByDateRange(
+    clientId: string,
+    startDate: Date,
+    endDate: Date
+  ) {
+    const events = await prisma.clientEvent.groupBy({
+      by: ['eventType'],
+      where: {
+        clientId,
+        createdAt: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+      _count: {
+        eventType: true,
+      },
+    });
+
+    const stats = {
+      leads: 0,
+      appointments: 0,
+      messages: 0,
+      handoffs: 0,
+      newConversations: 0,
+    };
+
+    for (const event of events) {
+      switch (event.eventType) {
+        case 'LEAD':
+          stats.leads = event._count.eventType;
+          break;
+        case 'APPOINTMENT':
+          stats.appointments = event._count.eventType;
+          break;
+        case 'MESSAGE':
+          stats.messages = event._count.eventType;
+          break;
+        case 'HANDOFF':
+          stats.handoffs = event._count.eventType;
+          break;
+        case 'NEW_CONVERSATION':
+          stats.newConversations = event._count.eventType;
+          break;
+      }
+    }
+
+    return stats;
+  }
+
+  /**
+   * Gets daily breakdown of events within a date range.
+   * Groups events by day in the specified timezone.
+   */
+  async getDailyBreakdown(
+    clientId: string,
+    startDate: Date,
+    endDate: Date,
+    timezone: string = 'America/Mexico_City'
+  ) {
+    // Import luxon's DateTime for timezone conversion
+    const { DateTime } = await import('luxon');
+    
+    // Get all events in range and group by day in application code
+    // (MySQL doesn't have easy date truncation in groupBy)
+    const events = await prisma.clientEvent.findMany({
+      where: {
+        clientId,
+        createdAt: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+      select: {
+        eventType: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    // Group by day in client timezone
+    const dailyMap: Record<string, Record<string, number>> = {};
+
+    for (const event of events) {
+      // Convert UTC to client timezone and get the day
+      const dayKey = DateTime.fromJSDate(event.createdAt, { zone: 'UTC' })
+        .setZone(timezone)
+        .toFormat('yyyy-MM-dd');
+      
+      if (!dailyMap[dayKey]) {
+        dailyMap[dayKey] = {
+          leads: 0,
+          appointments: 0,
+          messages: 0,
+          handoffs: 0,
+          newConversations: 0,
+          total: 0,
+        };
+      }
+
+      dailyMap[dayKey].total++;
+
+      switch (event.eventType) {
+        case 'LEAD':
+          dailyMap[dayKey].leads++;
+          break;
+        case 'APPOINTMENT':
+          dailyMap[dayKey].appointments++;
+          break;
+        case 'MESSAGE':
+          dailyMap[dayKey].messages++;
+          break;
+        case 'HANDOFF':
+          dailyMap[dayKey].handoffs++;
+          break;
+        case 'NEW_CONVERSATION':
+          dailyMap[dayKey].newConversations++;
+          break;
+      }
+    }
+
+    // Convert to array and sort by date
+    return Object.entries(dailyMap)
+      .map(([date, counts]) => ({
+        date,
+        ...counts,
+      }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+  }
 }
 
 export const analyticsService = new AnalyticsService();
+
