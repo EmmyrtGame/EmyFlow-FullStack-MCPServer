@@ -113,6 +113,8 @@ export function ClientForm({ initialData, onSubmit, isSubmitting = false }: Clie
         if (newValues.slug !== initialData.slug) changes.push(`Slug changed to: ${newValues.slug}`);
         if (newValues.isActive !== initialData.isActive) changes.push(`Active Status changed: ${newValues.isActive}`);
 
+        if (newValues.webhookUrl !== initialData.webhookUrl) changes.push(`Webhook URL updated`);
+
         // Integrations
         if (credentialMode !== 'existing' && serviceAccountFile) changes.push("Uploading new Service Account File");
         if (credentialMode === 'existing' && newValues.google?.serviceAccountPath !== initialData.google?.serviceAccountPath) changes.push("Selected different Service Account");
@@ -264,6 +266,28 @@ export function ClientForm({ initialData, onSubmit, isSubmitting = false }: Clie
                             <CardDescription>Configure external service connections.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
+
+                            <FormField
+                                control={form.control}
+                                name="webhookUrl"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Client Webhook URL</FormLabel>
+                                        <FormControl>
+                                            <div className="relative">
+                                                <Globe className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                                                <Input className="pl-9" placeholder="https://..." {...field} />
+                                            </div>
+                                        </FormControl>
+                                        <FormDescription>
+                                            Endpoint to receive incoming messages.
+                                        </FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <Separator />
 
                             <div className="space-y-4">
                                 <h3 className="text-sm font-medium leading-none">

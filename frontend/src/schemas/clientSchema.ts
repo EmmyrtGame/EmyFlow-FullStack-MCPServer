@@ -4,6 +4,7 @@ export const clientSchema = z.object({
   slug: z.string().min(3, 'Slug must be at least 3 characters').regex(/^[a-z0-9_]+$/, 'Slug must be lowercase alphanumeric with underscores'),
   name: z.string().min(1, 'Name is required'),
   isActive: z.boolean().default(true),
+  webhookUrl: z.string().url('Must be a valid URL').min(1, 'Webhook URL is required'),
   timezone: z.string().default('America/Mexico_City'),
 
   google: z.object({
@@ -44,6 +45,7 @@ export const defaultValues: ClientFormValues = {
   slug: '',
   name: '',
   isActive: true,
+  webhookUrl: '',
   timezone: 'America/Mexico_City',
   google: {
     serviceAccountPath: '',

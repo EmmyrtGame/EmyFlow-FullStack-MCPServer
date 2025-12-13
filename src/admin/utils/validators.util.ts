@@ -5,6 +5,7 @@ export const ConfigSchema = z.object({
   slug: z.string().min(3).regex(/^[a-z0-9_]+$/, 'Slug must be alphanumeric with underscores'),
   name: z.string().min(1),
   isActive: z.boolean().default(true),
+  webhookUrl: z.string().url('Must be a valid URL'),
   timezone: z.string().default('America/Mexico_City'),
   
   meta: z.object({
