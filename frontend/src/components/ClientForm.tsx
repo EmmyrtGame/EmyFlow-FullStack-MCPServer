@@ -56,6 +56,7 @@ export function ClientForm({ initialData, onSubmit, isSubmitting = false }: Clie
     // Prepare default values: Clear sensitive fields if editing for security
     const preparedDefaultValues = initialData ? {
         ...initialData,
+        webhookUrl: initialData.webhookUrl || '',
         meta: {
             ...initialData.meta,
             accessToken: ''
@@ -66,6 +67,9 @@ export function ClientForm({ initialData, onSubmit, isSubmitting = false }: Clie
             apiKey: ''
         }
     } : defaultValues;
+
+    // Track the "baseline" values. This is updated if we auto-resolve fields (like Service Account path) on load.
+    const [startValues, setStartValues] = useState<ClientFormValues>(preparedDefaultValues);
 
     const form = useForm<ClientFormValues>({
         resolver: zodResolver(clientSchema) as any,
@@ -85,14 +89,19 @@ export function ClientForm({ initialData, onSubmit, isSubmitting = false }: Clie
                 if (matched) {
                     setCredentialMode('existing');
                     const currentValues = form.getValues();
-                    // Reset form to make this the "clean" initial state
-                    form.reset({
+
+                    const newBaseValues = {
                         ...currentValues,
                         google: {
                             ...currentValues.google,
                             serviceAccountPath: matched.path
                         }
-                    });
+                    };
+
+                    // Reset form to make this the "clean" initial state
+                    form.reset(newBaseValues);
+                    // Update our baseline for diffing
+                    setStartValues(newBaseValues);
                 }
             } else if (initialData?.google?.serviceAccountPath) {
                 setCredentialMode('existing');
@@ -109,29 +118,29 @@ export function ClientForm({ initialData, onSubmit, isSubmitting = false }: Clie
         const changes: string[] = [];
         if (!initialData) return ["Creating new client configuration"];
 
-        if (newValues.name !== initialData.name) changes.push(`Name changed to: ${newValues.name}`);
-        if (newValues.slug !== initialData.slug) changes.push(`Slug changed to: ${newValues.slug}`);
-        if (newValues.isActive !== initialData.isActive) changes.push(`Active Status changed: ${newValues.isActive}`);
+        if (newValues.name !== startValues.name) changes.push(`Name changed to: ${newValues.name}`);
+        if (newValues.slug !== startValues.slug) changes.push(`Slug changed to: ${newValues.slug}`);
+        if (newValues.isActive !== startValues.isActive) changes.push(`Active Status changed: ${newValues.isActive}`);
 
-        if (newValues.webhookUrl !== initialData.webhookUrl) changes.push(`Webhook URL updated`);
+        if (newValues.webhookUrl !== startValues.webhookUrl) changes.push(`Webhook URL updated`);
 
         // Integrations
         if (credentialMode !== 'existing' && serviceAccountFile) changes.push("Uploading new Service Account File");
-        if (credentialMode === 'existing' && newValues.google?.serviceAccountPath !== initialData.google?.serviceAccountPath) changes.push("Selected different Service Account");
+        if (credentialMode === 'existing' && newValues.google?.serviceAccountPath !== startValues.google?.serviceAccountPath) changes.push("Selected different Service Account");
 
-        if (newValues.meta?.pixelId !== initialData.meta?.pixelId) changes.push("Meta Pixel ID updated");
-        if (newValues.meta?.accessToken) changes.push("Meta Access Token updated"); // Only if provided
+        if (newValues.meta?.pixelId !== startValues.meta?.pixelId) changes.push("Meta Pixel ID updated");
+        if (newValues.meta?.accessToken) changes.push("Meta Access Token updated");
 
-        if (newValues.wassenger?.apiKey) changes.push("Wassenger API Key updated"); // Only if provided
-        if (newValues.wassenger?.deviceId !== initialData.wassenger?.deviceId) changes.push("Wassenger Device ID updated");
+        if (newValues.wassenger?.apiKey) changes.push("Wassenger API Key updated");
+        if (newValues.wassenger?.deviceId !== startValues.wassenger?.deviceId) changes.push("Wassenger Device ID updated");
 
         // Locations (Simple count check or deep check)
-        if (JSON.stringify(newValues.locations) !== JSON.stringify(initialData.locations)) {
+        if (JSON.stringify(newValues.locations) !== JSON.stringify(startValues.locations)) {
             changes.push("Locations configuration updated");
         }
 
         // Templates
-        if (JSON.stringify(newValues.reminderTemplates) !== JSON.stringify(initialData.reminderTemplates)) {
+        if (JSON.stringify(newValues.reminderTemplates) !== JSON.stringify(startValues.reminderTemplates)) {
             changes.push("Reminder Templates updated");
         }
 
@@ -296,7 +305,15 @@ export function ClientForm({ initialData, onSubmit, isSubmitting = false }: Clie
                                 <div className="bg-slate-50 p-4 rounded-md border space-y-4">
                                     <RadioGroup
                                         value={credentialMode}
-                                        onValueChange={(val) => setCredentialMode(val as any)}
+                                        onValueChange={(val: 'existing' | 'upload') => {
+                                            setCredentialMode(val);
+                                            if (val === 'existing') {
+                                                setServiceAccountFile(null);
+                                                // If we switch back to existing, we might want to ensure the path is what it was
+                                                // or leave it as is if the user selected something else in the dropdown.
+                                                // For now, just clearing the file prevents the "upload" logic from triggering.
+                                            }
+                                        }}
                                         className="flex flex-row gap-4"
                                     >
                                         <div className="flex items-center space-x-2">
@@ -694,7 +711,13 @@ export function ClientForm({ initialData, onSubmit, isSubmitting = false }: Clie
                         <Button type="button" variant="outline" onClick={() => window.history.back()}>
                             Cancel
                         </Button>
-                        <Button type="submit" disabled={isSubmitting || (!form.formState.isDirty && !serviceAccountFile)}>
+                        <Button
+                            type="submit"
+                            disabled={
+                                isSubmitting ||
+                                (!form.formState.isDirty && !(credentialMode === 'upload' && serviceAccountFile))
+                            }
+                        >
                             {isSubmitting ? 'Saving...' : 'Save Client Configuration'}
                         </Button>
                     </div>
