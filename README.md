@@ -128,6 +128,7 @@ A **Service Account** is a special type of Google account intended to represent 
 ### Other Keys (Meta & Wassenger)
 *   **Wassenger (WhatsApp)**: Get your (or your client's) API Key from [Wassenger Developer Console](https://app.wassenger.com/developers). Required for sending automated messages.
 *   **Meta (Facebook/Instagram)**: Required for CAPI events. Get your (or your client's) `Pixel ID` and `Access Token` from [Facebook Events Manager](https://business.facebook.com/events_manager).
+*   **Webhook URL (Mandatory)**: Each client requires a specific **Webhook URL** (e.g., Make.com, n8n, Zapier) to receive incoming messages and handoff events. This is now configured per-client in the Admin Panel.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
