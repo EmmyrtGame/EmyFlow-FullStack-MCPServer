@@ -2,10 +2,70 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { createMcpServer } from './mcp/server';
-import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
+import { randomUUID } from 'crypto';
 // import { clients } from './config/clients'; // Removed after refactor
 
 dotenv.config();
+
+import fs from 'fs';
+import path from 'path';
+
+// ============== CRASH LOGGING ==============
+const CRASH_LOG_PATH = path.join(process.cwd(), 'crash.log');
+
+const logCrash = (type: string, error: any) => {
+  const timestamp = new Date().toISOString();
+  const message = `
+================== ${type} ==================
+Time: ${timestamp}
+Error: ${error?.message || error}
+Stack: ${error?.stack || 'No stack trace'}
+==============================================
+
+`;
+  console.error(`[CRASH] ${type}:`, error);
+  
+  try {
+    fs.appendFileSync(CRASH_LOG_PATH, message);
+  } catch (e) {
+    console.error('Failed to write crash log:', e);
+  }
+};
+
+// Catch uncaught exceptions
+process.on('uncaughtException', (error) => {
+  logCrash('UNCAUGHT_EXCEPTION', error);
+  // Give time to write log before exit
+  setTimeout(() => process.exit(1), 1000);
+});
+
+// Catch unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+  logCrash('UNHANDLED_REJECTION', reason);
+});
+
+// Log when process is about to exit
+process.on('exit', (code) => {
+  const msg = `[${new Date().toISOString()}] Process exiting with code: ${code}\n`;
+  console.log(msg);
+  try {
+    fs.appendFileSync(CRASH_LOG_PATH, msg);
+  } catch (e) {}
+});
+
+// Log SIGTERM/SIGINT
+process.on('SIGTERM', () => {
+  logCrash('SIGTERM', 'Process received SIGTERM signal');
+});
+
+process.on('SIGINT', () => {
+  logCrash('SIGINT', 'Process received SIGINT signal');
+});
+
+console.log(`[${new Date().toISOString()}] Crash handlers initialized. Log file: ${CRASH_LOG_PATH}`);
+// ============================================
 
 import webhookRoutes from './routes/webhooks';
 
@@ -45,9 +105,6 @@ app.use('/api/admin', express.json(), adminRoutes);
 app.use('/webhooks', express.json(), webhookRoutes);
 
 // --- Serve Frontend in Production ---
-import path from 'path';
-import fs from 'fs';
-
 const frontendDist = path.join(__dirname, '../frontend/dist');
 // In ts-node (src), __dirname is src/
 // In build (dist), __dirname is dist/
@@ -63,95 +120,162 @@ app.use(express.static('frontend/dist'));
 // app.get('*', ...) logic is below
 
 
-// --- MCP SSE Transport Setup ---
+// --- MCP Streamable HTTP Transport Setup ---
 // Store active transports and servers by sessionId
-const transports = new Map<string, SSEServerTransport>();
-const mcpServers = new Map<string, ReturnType<typeof createMcpServer>>();
+const transports: Record<string, StreamableHTTPServerTransport> = {};
+const mcpServers: Record<string, ReturnType<typeof createMcpServer>> = {};
 
-app.get('/sse', async (req, res) => {
-  logToMemory('New SSE connection attempt received');
-  
-  // 1. Set headers manually to ensure correct SSE setup and anti-buffering
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
-  res.setHeader('X-Accel-Buffering', 'no'); // For Nginx/Hostinger
-  
-  // 3. Construct Absolute URL for the endpoint
-  const endpointUrl = `https://slategray-baboon-146694.hostingersite.com/messages`;
+// Helper to check if body looks like an initialize request
+const handleMcpRequest = async (req: express.Request, res: express.Response) => {
+  const sessionId = req.headers['mcp-session-id'] as string | undefined;
+  let transport: StreamableHTTPServerTransport;
 
-  logToMemory(`Setting up transport with endpoint: ${endpointUrl}`);
+  if (sessionId && transports[sessionId]) {
+    // Existing session
+    transport = transports[sessionId];
+    logToMemory(`MCP request for existing session: ${sessionId}`);
+  } else if (!sessionId && isInitializeRequest(req.body)) {
+    // New session - create transport and server
+    logToMemory('New MCP connection - initializing session');
+    
+    transport = new StreamableHTTPServerTransport({
+      sessionIdGenerator: () => randomUUID(),
+      onsessioninitialized: (newSessionId) => {
+        transports[newSessionId] = transport;
+        logToMemory(`MCP Session initialized: ${newSessionId}`);
+      },
+    });
 
-  const server = createMcpServer();
-  const transport = new SSEServerTransport(endpointUrl, res);
-  
-  // Connect the server to the transport
-  logToMemory('Connecting server to transport...');
-  await server.connect(transport);
-  
-  // Send padding AFTER connection is established to bypass buffering
-  res.write(': ' + ' '.repeat(2048) + '\n\n');
+    transport.onclose = () => {
+      const sid = transport.sessionId;
+      if (sid) {
+        logToMemory(`MCP Session closed: ${sid}`);
+        delete transports[sid];
+        
+        // Close the MCP server
+        const mcpServer = mcpServers[sid];
+        if (mcpServer) {
+          mcpServer.close().catch((e) => {
+            logToMemory(`Error closing MCP server: ${e}`);
+          });
+          delete mcpServers[sid];
+        }
+      }
+    };
 
-  const sessionId = (transport as any).sessionId;
-  if (sessionId) {
-    transports.set(sessionId, transport);
-    mcpServers.set(sessionId, server);
-    logToMemory(`SSE Session created: ${sessionId}`);
+    const server = createMcpServer();
+    await server.connect(transport);
+    
+    if (transport.sessionId) {
+      mcpServers[transport.sessionId] = server;
+    }
+  } else {
+    // Invalid request - no session and not an initialize request
+    logToMemory(`Invalid MCP request: missing session ID or not an initialize request`);
+    res.status(400).json({
+      jsonrpc: '2.0',
+      error: {
+        code: -32000,
+        message: 'Bad Request: No valid session ID provided',
+      },
+      id: null,
+    });
+    return;
   }
 
-  // Cleanup on connection close - PROPERLY close MCP server
-  res.on('close', async () => {
-    logToMemory(`SSE connection closed for session: ${sessionId}`);
-    if (sessionId) {
-      transports.delete(sessionId);
-      
-      // Close the MCP server to release resources
-      const mcpServer = mcpServers.get(sessionId);
-      if (mcpServer) {
-        try {
-          await mcpServer.close();
-          logToMemory(`MCP Server closed for session: ${sessionId}`);
-        } catch (e) {
-          logToMemory(`Error closing MCP server: ${e}`);
-        }
-        mcpServers.delete(sessionId);
-      }
+  // Handle the request through the transport
+  try {
+    await transport.handleRequest(req, res, req.body);
+  } catch (error: any) {
+    logToMemory(`Error handling MCP request: ${error.message}`);
+    logToMemory(`Stack: ${error.stack}`);
+    if (!res.headersSent) {
+      res.status(500).json({
+        jsonrpc: '2.0',
+        error: {
+          code: -32603,
+          message: error.message,
+        },
+        id: null,
+      });
     }
+  }
+};
+
+// Handle GET requests (for SSE streaming from server to client)
+const handleMcpGet = async (req: express.Request, res: express.Response) => {
+  const sessionId = req.headers['mcp-session-id'] as string | undefined;
+  
+  if (!sessionId || !transports[sessionId]) {
+    logToMemory(`Invalid MCP GET: missing or invalid session ID`);
+    res.status(400).send('Invalid or missing session ID');
+    return;
+  }
+
+  logToMemory(`MCP GET for session: ${sessionId}`);
+  const transport = transports[sessionId];
+  
+  try {
+    await transport.handleRequest(req, res);
+  } catch (error: any) {
+    logToMemory(`Error handling MCP GET: ${error.message}`);
+    if (!res.headersSent) {
+      res.status(500).send(error.message);
+    }
+  }
+};
+
+// Handle DELETE requests (to close sessions)
+const handleMcpDelete = async (req: express.Request, res: express.Response) => {
+  const sessionId = req.headers['mcp-session-id'] as string | undefined;
+  
+  if (!sessionId || !transports[sessionId]) {
+    logToMemory(`Invalid MCP DELETE: missing or invalid session ID`);
+    res.status(400).send('Invalid or missing session ID');
+    return;
+  }
+
+  logToMemory(`MCP DELETE for session: ${sessionId}`);
+  const transport = transports[sessionId];
+  
+  try {
+    await transport.handleRequest(req, res);
+  } catch (error: any) {
+    logToMemory(`Error handling MCP DELETE: ${error.message}`);
+    if (!res.headersSent) {
+      res.status(500).send(error.message);
+    }
+  }
+};
+
+// Single MCP endpoint - handles POST, GET, and DELETE
+app.post('/mcp', express.json(), handleMcpRequest);
+app.get('/mcp', handleMcpGet);
+app.delete('/mcp', handleMcpDelete);
+
+// Legacy endpoints for backwards compatibility (redirect to new endpoint)
+app.get('/sse', (req, res) => {
+  logToMemory('Legacy /sse endpoint called - redirecting info');
+  res.status(410).json({
+    error: 'SSE transport deprecated',
+    message: 'Please use the new /mcp endpoint with Streamable HTTP transport',
+    newEndpoint: '/mcp',
   });
 });
 
-app.post('/messages', async (req, res) => {
-  const sessionId = req.query.sessionId as string;
-  logToMemory(`POST /messages received. SessionId: ${sessionId}`);
-  logToMemory(`Request Readable: ${req.readable}, Complete: ${req.complete}`);
-  
-  if (!sessionId) {
-    res.status(400).send('Missing sessionId parameter');
-    return;
-  }
-
-  const transport = transports.get(sessionId);
-  if (!transport) {
-    logToMemory(`Session not found or expired: ${sessionId}`);
-    res.status(404).send('Session not found or expired');
-    return;
-  }
-
-  try {
-    logToMemory('Handling POST message via transport...');
-    await transport.handlePostMessage(req, res);
-    logToMemory('POST message handled successfully');
-  } catch (error: any) {
-    logToMemory(`Error handling POST message: ${error.message}`);
-    logToMemory(`Stack: ${error.stack}`);
-    res.status(500).send(error.message);
-  }
+app.post('/messages', (req, res) => {
+  logToMemory('Legacy /messages endpoint called');
+  res.status(410).json({
+    error: 'SSE transport deprecated', 
+    message: 'Please use the new /mcp endpoint with Streamable HTTP transport',
+    newEndpoint: '/mcp',
+  });
 });
 // -------------------------------
 
 // Serve React App for any other route (SPA support)
 app.get('*', (req, res) => {
-  if (req.path.startsWith('/api') || req.path.startsWith('/sse') || req.path.startsWith('/webhooks')) {
+  if (req.path.startsWith('/api') || req.path.startsWith('/mcp') || req.path.startsWith('/webhooks')) {
       return res.status(404).send('Not Found');
   }
   const indexHtml = path.join(frontendDist, 'index.html');
@@ -176,7 +300,6 @@ const startServer = async () => {
   } catch (error: any) {
     console.error('Failed to start server:', error);
     try {
-        const fs = require('fs');
         fs.appendFileSync('startup_error.log', `[${new Date().toISOString()}] Startup Error: ${error.stack || error}\n`);
     } catch (e) {
         console.error('Failed to write error log:', e);
