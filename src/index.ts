@@ -42,7 +42,6 @@ app.use((req, res, next) => {
 
 
 app.use('/api/admin', express.json(), adminRoutes);
-app.use('/api/admin', express.json(), adminRoutes);
 app.use('/webhooks', express.json(), webhookRoutes);
 
 // --- Serve Frontend in Production ---
