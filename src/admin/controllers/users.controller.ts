@@ -1,9 +1,7 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../../db/prisma';
 import { UserSchema } from '../utils/validators.util';
 import bcrypt from 'bcrypt';
-
-const prisma = new PrismaClient();
 
 class UsersController {
   

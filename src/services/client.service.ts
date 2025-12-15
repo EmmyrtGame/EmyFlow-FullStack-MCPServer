@@ -1,10 +1,9 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../db/prisma';
+import { Prisma } from '@prisma/client';
 import { decrypt } from '../admin/utils/crypto.util';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
-
-const prisma = new PrismaClient();
 
 // Interface matching the structure expected by the tools, similar to clients.ts
 export interface DecryptedClientConfig {

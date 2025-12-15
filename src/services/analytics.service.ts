@@ -1,6 +1,4 @@
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '../db/prisma';
 
 // Event types that can be tracked
 export type EventType = 'LEAD' | 'APPOINTMENT' | 'MESSAGE' | 'HANDOFF' | 'NEW_CONVERSATION';

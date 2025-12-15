@@ -1,9 +1,7 @@
 import { Request, Response } from 'express';
 import { analyticsService, EventType } from '../../services/analytics.service';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../../db/prisma';
 import { DateTime } from 'luxon';
-
-const prisma = new PrismaClient();
 
 class AnalyticsController {
   /**
