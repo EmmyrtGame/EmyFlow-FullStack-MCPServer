@@ -64,8 +64,9 @@ app.use(express.static('frontend/dist'));
 
 
 // --- MCP SSE Transport Setup ---
-// Store active transports by sessionId
+// Store active transports and servers by sessionId
 const transports = new Map<string, SSEServerTransport>();
+const mcpServers = new Map<string, ReturnType<typeof createMcpServer>>();
 
 app.get('/sse', async (req, res) => {
   logToMemory('New SSE connection attempt received');
@@ -76,15 +77,7 @@ app.get('/sse', async (req, res) => {
   res.setHeader('Connection', 'keep-alive');
   res.setHeader('X-Accel-Buffering', 'no'); // For Nginx/Hostinger
   
-  // if (res.flushHeaders) res.flushHeaders();
-  // 2. Send padding to bypass buffering (some proxies need 2KB+ to start streaming)
-  // const padding = ': ' + ' '.repeat(2048) + '\n\n';
-  // res.write(padding);
-
   // 3. Construct Absolute URL for the endpoint
-  // Use https by default for production, or req.protocol if trusted
-  const protocol = req.headers['x-forwarded-proto'] || 'https';
-  const host = req.headers.host;
   const endpointUrl = `https://slategray-baboon-146694.hostingersite.com/messages`;
 
   logToMemory(`Setting up transport with endpoint: ${endpointUrl}`);
@@ -96,21 +89,33 @@ app.get('/sse', async (req, res) => {
   logToMemory('Connecting server to transport...');
   await server.connect(transport);
   
-  // 4. Send padding AFTER connection is established (headers sent) to bypass buffering
-  // This is safe here because SSEServerTransport has already sent headers.
+  // Send padding AFTER connection is established to bypass buffering
   res.write(': ' + ' '.repeat(2048) + '\n\n');
 
   const sessionId = (transport as any).sessionId;
   if (sessionId) {
     transports.set(sessionId, transport);
+    mcpServers.set(sessionId, server);
     logToMemory(`SSE Session created: ${sessionId}`);
   }
 
-  // Cleanup on connection close
-  res.on('close', () => {
+  // Cleanup on connection close - PROPERLY close MCP server
+  res.on('close', async () => {
     logToMemory(`SSE connection closed for session: ${sessionId}`);
     if (sessionId) {
       transports.delete(sessionId);
+      
+      // Close the MCP server to release resources
+      const mcpServer = mcpServers.get(sessionId);
+      if (mcpServer) {
+        try {
+          await mcpServer.close();
+          logToMemory(`MCP Server closed for session: ${sessionId}`);
+        } catch (e) {
+          logToMemory(`Error closing MCP server: ${e}`);
+        }
+        mcpServers.delete(sessionId);
+      }
     }
   });
 });
