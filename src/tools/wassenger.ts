@@ -60,12 +60,26 @@ export const scheduleAppointmentReminders = async (
   const appointmentTime = new Date(appointmentTimeStr);
   const now = new Date();
 
-  const timeFormatted = appointmentTime.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
-  const dayOfWeek = appointmentTime.toLocaleDateString('es-MX', { weekday: 'long' });
+  // Use client's timezone for formatting times correctly
+  const clientTimezone = clientConfig.timezone || 'America/Mexico_City';
+
+  const timeFormatted = appointmentTime.toLocaleTimeString('es-MX', { 
+    hour: '2-digit', 
+    minute: '2-digit',
+    timeZone: clientTimezone 
+  });
+  const dayOfWeek = appointmentTime.toLocaleDateString('es-MX', { 
+    weekday: 'long',
+    timeZone: clientTimezone 
+  });
   // Capitalize first letter of day
   const dayOfWeekCapitalized = dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1);
   
-  const dayNum = appointmentTime.toLocaleDateString('es-MX', { day: 'numeric', month: 'long' });
+  const dayNum = appointmentTime.toLocaleDateString('es-MX', { 
+    day: 'numeric', 
+    month: 'long',
+    timeZone: clientTimezone 
+  });
 
   const reminders = [
     { label: '24h', details: { hours: 24 } },
