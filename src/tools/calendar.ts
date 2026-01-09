@@ -284,12 +284,17 @@ export const calendarCreateAppointment = async (args: {
   const startIso = startDateTime.toISO()!;
   const endIso = endDateTime.toISO()!;
 
+  // Expand search window to ensure we get all potentially overlapping events
+  // Query from 1 day before to 1 day after to catch all events in the target day
+  const searchStart = startDateTime.minus({ days: 1 }).toISO()!;
+  const searchEnd = endDateTime.plus({ days: 1 }).toISO()!;
+
   const checkPromises = availabilityCalendars.map(async (calId) => {
     try {
       const response = await calendar.events.list({
         calendarId: calId,
-        timeMin: startIso,
-        timeMax: endIso,
+        timeMin: searchStart,
+        timeMax: searchEnd,
         singleEvents: true,
       });
       return response.data.items || [];
@@ -301,7 +306,24 @@ export const calendarCreateAppointment = async (args: {
   });
 
   const checkResults = await Promise.all(checkPromises);
-  const conflictingEvents = checkResults.flat();
+  const allEvents = checkResults.flat();
+
+  // Filter to only events that actually overlap with our requested time slot
+  // Using millisecond comparison to handle boundaries correctly:
+  // - Event ending at 10:30 doesn't conflict with slot starting at 10:30
+  // - Event starting at 11:00 doesn't conflict with slot ending at 11:00
+  const checkStartMs = startDateTime.toMillis();
+  const checkEndMs = endDateTime.toMillis();
+
+  const conflictingEvents = allEvents.filter(e => {
+    if (!e.start?.dateTime || !e.end?.dateTime) return false;
+    
+    const eventStartMs = DateTime.fromISO(e.start.dateTime).toMillis();
+    const eventEndMs = DateTime.fromISO(e.end.dateTime).toMillis();
+    
+    // Overlap exists if: requested_start < event_end AND requested_end > event_start
+    return (checkStartMs < eventEndMs && checkEndMs > eventStartMs);
+  });
 
   if (conflictingEvents.length > 0) {
      return { content: [{ type: "text", text: JSON.stringify({ success: false, error: "Slot no longer available (Conflict detected)" }) }] };
