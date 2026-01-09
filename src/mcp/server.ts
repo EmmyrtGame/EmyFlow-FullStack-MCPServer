@@ -40,7 +40,7 @@ export const createMcpServer = () => {
         },
         {
           name: "calendar_create_appointment",
-          description: "Schedule and confirm a new appointment. REQUIRES collecting all patient data (name, phone) first. Will fail if the slot is no longer available.",
+          description: "Schedule and confirm a new appointment. REQUIRES collecting patient data (name, phone) first. Optionally collect email for better attribution. Will fail if the slot is no longer available.",
           inputSchema: {
             type: "object",
             properties: {
@@ -49,7 +49,12 @@ export const createMcpServer = () => {
                 type: "object",
                 properties: {
                   nombre: { type: "string", description: "Patient's full name" },
-                  telefono: { type: "string", description: "Patient's phone number" }
+                  telefono: { type: "string", description: "Patient's phone number" },
+                  email: { type: "string", description: "Optional. Patient's email address. Highly recommended for marketing attribution." },
+                  country: { 
+                    type: "string", 
+                    description: "Optional. ISO 3166-1 alpha-2 country code (2 lowercase letters). Infer from phone country code. Examples: '+52' -> 'mx' (Mexico), '+1' -> 'us' (USA), '+34' -> 'es' (Spain), '+57' -> 'co' (Colombia), '+54' -> 'ar' (Argentina), '+56' -> 'cl' (Chile)." 
+                  }
                 },
                 required: ["nombre", "telefono"]
               },

@@ -217,13 +217,18 @@ export const calendarCheckAvailability = async (args: { client_id: string; start
 /**
  * Creates an appointment in Google Calendar.
  * @param args.client_id The client identifier.
- * @param args.patient_data Patient details (name, phone).
+ * @param args.patient_data Patient details (name, phone, email, country).
  * @param args.start_time Start time of the appointment.
  * @param args.end_time End time of the appointment.
  */
 export const calendarCreateAppointment = async (args: { 
   client_id: string; 
-  patient_data: { nombre: string; telefono: string };
+  patient_data: { 
+    nombre: string; 
+    telefono: string;
+    email?: string;
+    country?: string;
+  };
   start_time: string; 
   end_time: string;
   description: string;
@@ -352,10 +357,19 @@ export const calendarCreateAppointment = async (args: {
     );
 
 
+    // Split patient name into first and last for CAPI matching
+    const nameParts = patient_data.nombre.trim().split(/\s+/);
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || undefined;
+
     trackScheduleEvent({
       client_id,
       user_data: {
-        phone: patient_data.telefono
+        phone: patient_data.telefono,
+        firstName: firstName,
+        lastName: lastName,
+        email: patient_data.email,
+        country: patient_data.country
       }
     });
 
